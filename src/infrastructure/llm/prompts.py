@@ -59,6 +59,12 @@ Instructions:
 - If the context doesn't contain enough information to fully answer the question, acknowledge this
 - Be concise and accurate
 - Use direct quotes when appropriate
+- Format your response using Markdown for better readability:
+  * Use **bold** for emphasis on key terms and important points
+  * Use bullet lists (- item) or numbered lists (1. item) when presenting multiple points
+  * Use code blocks with syntax highlighting (```language) for code examples
+  * Use inline code (`code`) for technical terms, function names, or short code snippets
+  * Use proper headings (##) if organizing a longer response into sections
 
 Answer:"""
 
@@ -84,6 +90,7 @@ Instructions:
 - Inform the user that you cannot find relevant information in the uploaded books to answer their question
 - Suggest they may need to upload additional books or rephrase their query
 - Do not provide general knowledge answers; only answer based on uploaded book content
+- Format your response using Markdown (use **bold** for emphasis, bullet lists, etc.)
 
 Answer:"""
 
