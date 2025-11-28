@@ -6,7 +6,7 @@ import FileUpload from './components/FileUpload.vue';
 import BookList from './components/BookList.vue';
 import ChatInterface from './components/ChatInterface.vue';
 
-const { uploadBooks, getBooks, deleteBook, clearSession, loading, sessionId } = useApi();
+const { uploadBooks, getBooks, deleteBook, clearSession, loading, uploadProgress, sessionId } = useApi();
 
 const books = ref<Book[]>([]);
 const uploadError = ref<string | null>(null);
@@ -94,6 +94,7 @@ async function handleClearAll() {
             :max-books="MAX_BOOKS"
             :current-book-count="books.length"
             :loading="loading"
+            :upload-progress="uploadProgress"
             @upload="handleUpload"
           />
 

@@ -60,35 +60,31 @@ class QueryService:
         else:
             chunks_with_neighbors = chunks
 
-        # Build context from chunks using parent content for hierarchical chunking
-        # Use parent_content if available (hierarchical chunking), otherwise use content (backward compat)
-        # Group chunks by book to maintain coherent context
-        context = []
-        current_book_id = None
-        book_chunks = []
-
+        # Build enhanced chunks with parent content for hierarchical chunking
+        # Replace chunk content with parent_content for richer context while preserving metadata
+        enhanced_chunks = []
         for chunk in chunks_with_neighbors:
-            if current_book_id != chunk.book_id:
-                # New book - add previous book's context if exists
-                if book_chunks:
-                    combined = "\n\n".join(book_chunks)
-                    context.append(combined)
-                    book_chunks = []
-                current_book_id = chunk.book_id
-
-            # Add chunk content (prefer parent_content for richer context)
-            chunk_text = chunk.parent_content if chunk.parent_content else chunk.content
-            book_chunks.append(chunk_text)
-
-        # Don't forget the last book
-        if book_chunks:
-            combined = "\n\n".join(book_chunks)
-            context.append(combined)
+            # Create a new chunk with parent content but same metadata
+            enhanced_chunk = Chunk(
+                id=chunk.id,
+                book_id=chunk.book_id,
+                content=chunk.parent_content if chunk.parent_content else chunk.content,
+                page_number=chunk.page_number,
+                chapter=chunk.chapter,
+                embedding=chunk.embedding,
+                has_code=chunk.has_code,
+                code_language=chunk.code_language,
+                sequence_number=chunk.sequence_number,
+                parent_chunk_id=chunk.parent_chunk_id,
+                parent_content=chunk.parent_content,
+            )
+            enhanced_chunks.append(enhanced_chunk)
 
         # Generate answer with conversation history
+        # Pass Chunk objects directly to preserve metadata for source attribution
         answer = await self.llm_client.generate(
             prompt=request.query,
-            context=context,
+            context=enhanced_chunks,
             conversation_history=request.conversation_history,
             model=request.model,
         )

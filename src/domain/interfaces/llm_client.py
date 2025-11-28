@@ -2,6 +2,8 @@
 
 from abc import ABC, abstractmethod
 
+from src.domain.entities import Chunk
+
 
 class LLMClient(ABC):
     """Interface for LLM interactions."""
@@ -10,7 +12,7 @@ class LLMClient(ABC):
     async def generate(
         self,
         prompt: str,
-        context: list[str],
+        context: list[str] | list[Chunk],
         conversation_history: list[dict[str, str]] | None = None,
         model: str | None = None,
     ) -> str:
@@ -19,7 +21,7 @@ class LLMClient(ABC):
 
         Args:
             prompt: User question.
-            context: Relevant text chunks for RAG.
+            context: Relevant text chunks (strings) or Chunk objects for RAG.
             conversation_history: Previous messages in the conversation (optional).
             model: Override default model for this request (optional).
 

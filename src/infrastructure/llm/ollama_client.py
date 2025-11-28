@@ -26,7 +26,7 @@ class OllamaLLMClient(LLMClient):
     async def generate(
         self,
         prompt: str,
-        context: list[str],
+        context: list[str] | list[Chunk],
         conversation_history: list[dict[str, str]] | None = None,
         model: str | None = None,
     ) -> str:
@@ -35,7 +35,7 @@ class OllamaLLMClient(LLMClient):
 
         Args:
             prompt: User's question.
-            context: List of relevant text chunks.
+            context: List of relevant text chunks (strings or Chunk objects).
             conversation_history: Previous messages in the conversation (optional).
             model: Override default model for this request (optional).
 
@@ -46,17 +46,20 @@ class OllamaLLMClient(LLMClient):
             LLMConnectionError: If Ollama server is unreachable or returns error.
         """
         try:
-            # Convert context strings to Chunk objects for prompt builder
-            # Note: In real usage, these would be Chunk entities with metadata
-            # For now, create minimal chunks from context strings
-            chunks = [
-                Chunk(
-                    id=None,  # Not needed for prompt building
-                    book_id=None,  # Not needed for prompt building
-                    content=text,
-                )
-                for text in context
-            ]
+            # Handle both string context and Chunk objects
+            if context and isinstance(context[0], str):
+                # Convert context strings to minimal Chunk objects
+                chunks = [
+                    Chunk(
+                        id=None,
+                        book_id=None,
+                        content=text,
+                    )
+                    for text in context
+                ]
+            else:
+                # Already Chunk objects with metadata
+                chunks = context
 
             # Build the RAG prompt
             full_prompt = self.prompt_builder.build_prompt(

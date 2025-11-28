@@ -56,12 +56,26 @@ class ChromaVectorStore(VectorStore):
         if not embeddings or len(embeddings) != len(chunks):
             raise ValueError("All chunks must have embeddings")
 
-        collection.add(
-            ids=ids,
-            embeddings=embeddings,
-            documents=documents,
-            metadatas=metadatas,
-        )
+        # ChromaDB has a max batch size (~5461), so batch large uploads
+        BATCH_SIZE = 1000
+        total_chunks = len(chunks)
+
+        for i in range(0, total_chunks, BATCH_SIZE):
+            end_idx = min(i + BATCH_SIZE, total_chunks)
+            batch_ids = ids[i:end_idx]
+            batch_embeddings = embeddings[i:end_idx]
+            batch_documents = documents[i:end_idx]
+            batch_metadatas = metadatas[i:end_idx]
+
+            collection.add(
+                ids=batch_ids,
+                embeddings=batch_embeddings,
+                documents=batch_documents,
+                metadatas=batch_metadatas,
+            )
+
+            if total_chunks > BATCH_SIZE:
+                print(f"  ✓ Added batch {i//BATCH_SIZE + 1}/{(total_chunks + BATCH_SIZE - 1)//BATCH_SIZE} ({end_idx}/{total_chunks} chunks)")
 
     async def search(
         self, query_embedding: list[float], collection_id: str, top_k: int = 5

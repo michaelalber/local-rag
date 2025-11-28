@@ -7,33 +7,90 @@ sessionStorage.setItem('sessionId', SESSION_ID);
 
 const API_BASE = '/api';
 
+export interface UploadProgress {
+  fileName: string;
+  uploadProgress: number;
+  stage: 'uploading' | 'processing';
+  statusText: string;
+}
+
 export function useApi() {
   const loading = ref(false);
   const error = ref<string | null>(null);
+  const uploadProgress = ref<UploadProgress | null>(null);
 
   async function uploadBooks(files: File[]): Promise<Book[]> {
     loading.value = true;
     error.value = null;
 
     try {
-      const formData = new FormData();
-      files.forEach(file => formData.append('files', file));
+      const results: Book[] = [];
 
-      const response = await fetch(`${API_BASE}/books`, {
-        method: 'POST',
-        headers: {
-          'session-id': SESSION_ID,
-        },
-        body: formData,
-      });
+      // Process files one at a time to show accurate progress
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        uploadProgress.value = {
+          fileName: file.name,
+          uploadProgress: 0,
+          stage: 'uploading',
+          statusText: `Uploading ${file.name} (${i + 1}/${files.length})...`,
+        };
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || `Upload failed: ${response.status}`);
+        const formData = new FormData();
+        formData.append('files', file);
+
+        // Use XMLHttpRequest for upload progress tracking
+        const books = await new Promise<Book[]>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+
+          xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable && uploadProgress.value) {
+              const percentComplete = (e.loaded / e.total) * 100;
+              uploadProgress.value.uploadProgress = percentComplete;
+            }
+          });
+
+          xhr.addEventListener('load', () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              // Upload complete, now processing
+              if (uploadProgress.value) {
+                uploadProgress.value.stage = 'processing';
+                uploadProgress.value.uploadProgress = 100;
+                uploadProgress.value.statusText = `Processing ${file.name}... (parsing, embedding, storing)`;
+              }
+
+              try {
+                const data = JSON.parse(xhr.responseText);
+                resolve(data);
+              } catch (err) {
+                reject(new Error('Failed to parse response'));
+              }
+            } else {
+              try {
+                const data = JSON.parse(xhr.responseText);
+                reject(new Error(data.error || `Upload failed: ${xhr.status}`));
+              } catch {
+                reject(new Error(`Upload failed: ${xhr.status}`));
+              }
+            }
+          });
+
+          xhr.addEventListener('error', () => {
+            reject(new Error('Network error during upload'));
+          });
+
+          xhr.open('POST', `${API_BASE}/books`);
+          xhr.setRequestHeader('session-id', SESSION_ID);
+          xhr.send(formData);
+        });
+
+        results.push(...books);
       }
 
-      return await response.json();
+      uploadProgress.value = null;
+      return results;
     } catch (err) {
+      uploadProgress.value = null;
       error.value = err instanceof Error ? err.message : 'Upload failed';
       throw err;
     } finally {
@@ -173,6 +230,7 @@ export function useApi() {
   return {
     loading,
     error,
+    uploadProgress,
     uploadBooks,
     getBooks,
     deleteBook,
