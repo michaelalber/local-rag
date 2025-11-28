@@ -2,7 +2,7 @@
 
 import time
 
-from src.domain.entities import QueryRequest, QueryResponse
+from src.domain.entities import Chunk, QueryRequest, QueryResponse
 from src.domain.interfaces import EmbeddingService, LLMClient, VectorStore
 
 
