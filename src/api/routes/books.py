@@ -90,9 +90,11 @@ async def delete_book(
     book_id: UUID,
     session_id: Annotated[str, Header()],
     session_manager: Annotated[SessionManager, Depends(get_session_manager)],
+    vector_store: Annotated[VectorStore, Depends(get_vector_store)],
 ) -> None:
-    """Remove a book from the session."""
+    """Remove a book from the session and delete its chunks from the vector store."""
     session_manager.remove_book(session_id, book_id)
+    await vector_store.delete_book_chunks(session_id, book_id)
 
 
 @router.delete("", status_code=status.HTTP_204_NO_CONTENT)

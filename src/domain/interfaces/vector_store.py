@@ -1,6 +1,7 @@
 """Vector store interface."""
 
 from abc import ABC, abstractmethod
+from uuid import UUID
 
 from ..entities import Chunk
 
@@ -39,6 +40,17 @@ class VectorStore(ABC):
     @abstractmethod
     async def delete_collection(self, collection_id: str) -> None:
         """Delete a collection and all its chunks."""
+        pass
+
+    @abstractmethod
+    async def delete_book_chunks(self, collection_id: str, book_id: UUID) -> None:
+        """
+        Delete all chunks belonging to a specific book.
+
+        Args:
+            collection_id: Collection/session identifier.
+            book_id: Book identifier to delete chunks for.
+        """
         pass
 
     @abstractmethod

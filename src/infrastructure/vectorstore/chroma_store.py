@@ -107,6 +107,23 @@ class ChromaVectorStore(VectorStore):
         except ValueError:
             pass  # Collection doesn't exist, that's fine
 
+    async def delete_book_chunks(self, collection_id: str, book_id: UUID) -> None:
+        """Delete all chunks belonging to a specific book."""
+        collection_name = self._sanitize_collection_name(collection_id)
+
+        # Check if collection exists
+        existing = [c.name for c in self.client.list_collections()]
+        if collection_name not in existing:
+            return  # Collection doesn't exist, nothing to delete
+
+        collection = self.client.get_collection(collection_name)
+
+        # Delete all chunks with matching book_id
+        try:
+            collection.delete(where={"book_id": str(book_id)})
+        except Exception:
+            pass  # Chunks may not exist, that's fine
+
     async def collection_exists(self, collection_id: str) -> bool:
         """Check if collection exists."""
         collection_name = self._sanitize_collection_name(collection_id)
