@@ -13,19 +13,22 @@ class RAGPromptBuilder:
         """
         self.max_context_length = max_context_length
 
-    def build_prompt(self, query: str, context_chunks: list[Chunk]) -> str:
+    def build_prompt(
+        self, query: str, context_chunks: list[Chunk], conversation_history: list[dict[str, str]] | None = None
+    ) -> str:
         """
         Build a RAG prompt with query and context.
 
         Args:
             query: User's question.
             context_chunks: Relevant chunks retrieved from vector store.
+            conversation_history: Previous messages in the conversation (optional).
 
         Returns:
             Formatted prompt for LLM.
         """
         if not context_chunks:
-            return self._build_no_context_prompt(query)
+            return self._build_no_context_prompt(query, conversation_history)
 
         # Format context with source attribution
         context_parts = []
@@ -45,11 +48,20 @@ class RAGPromptBuilder:
 
         context_text = "\n\n".join(context_parts)
 
+        # Format conversation history if provided
+        history_text = ""
+        if conversation_history:
+            history_parts = []
+            for msg in conversation_history:
+                role = "User" if msg["role"] == "user" else "Assistant"
+                history_parts.append(f"{role}: {msg['content']}")
+            history_text = "\n\nPrevious conversation:\n" + "\n".join(history_parts) + "\n"
+
         # Build the complete prompt
         prompt = f"""You are a helpful assistant answering questions based on provided context from books.
 
 Context from relevant book sections:
-{context_text}
+{context_text}{history_text}
 
 User Question: {query}
 
@@ -70,19 +82,29 @@ Answer:"""
 
         return prompt
 
-    def _build_no_context_prompt(self, query: str) -> str:
+    def _build_no_context_prompt(self, query: str, conversation_history: list[dict[str, str]] | None = None) -> str:
         """
         Build prompt when no relevant context is found.
 
         Args:
             query: User's question.
+            conversation_history: Previous messages in the conversation (optional).
 
         Returns:
             Prompt indicating no context available.
         """
+        # Format conversation history if provided
+        history_text = ""
+        if conversation_history:
+            history_parts = []
+            for msg in conversation_history:
+                role = "User" if msg["role"] == "user" else "Assistant"
+                history_parts.append(f"{role}: {msg['content']}")
+            history_text = "\n\nPrevious conversation:\n" + "\n".join(history_parts) + "\n"
+
         prompt = f"""You are a helpful assistant answering questions based on provided context from books.
 
-Context: No relevant context found in the uploaded books for this query.
+Context: No relevant context found in the uploaded books for this query.{history_text}
 
 User Question: {query}
 

@@ -58,7 +58,13 @@ async function handleSendMessage() {
   await scrollToBottom();
 
   try {
-    const response = await chat(query, topK.value);
+    // Build conversation history (excluding the current message)
+    const history = messages.value.slice(0, -1).map(msg => ({
+      role: msg.role,
+      content: msg.content
+    }));
+
+    const response = await chat(query, topK.value, history);
 
     const assistantMessage: Message = {
       id: crypto.randomUUID(),

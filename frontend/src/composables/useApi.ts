@@ -89,7 +89,7 @@ export function useApi() {
     }
   }
 
-  async function chat(query: string, topK: number = 5): Promise<ChatResponse> {
+  async function chat(query: string, topK: number = 5, history: Array<{role: string, content: string}> = []): Promise<ChatResponse> {
     loading.value = true;
     error.value = null;
 
@@ -100,7 +100,7 @@ export function useApi() {
           'Content-Type': 'application/json',
           'session-id': SESSION_ID,
         },
-        body: JSON.stringify({ query, top_k: topK }),
+        body: JSON.stringify({ query, top_k: topK, history }),
       });
 
       if (!response.ok) {

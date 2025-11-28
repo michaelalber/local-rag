@@ -24,10 +24,19 @@ async def chat(
 
     Uses RAG to find relevant context and generate an answer.
     """
+    # Convert ChatMessage objects to dicts for the domain layer
+    conversation_history = None
+    if chat_request.history:
+        conversation_history = [
+            {"role": msg.role, "content": msg.content}
+            for msg in chat_request.history
+        ]
+
     query_request = QueryRequest(
         query=chat_request.query,
         session_id=session_id,
         top_k=chat_request.top_k,
+        conversation_history=conversation_history,
     )
 
     response = await query_service.query(query_request)

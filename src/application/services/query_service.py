@@ -50,10 +50,11 @@ class QueryService:
         # Build context from chunks
         context = [chunk.content for chunk in chunks]
 
-        # Generate answer
+        # Generate answer with conversation history
         answer = await self.llm_client.generate(
             prompt=request.query,
             context=context,
+            conversation_history=request.conversation_history,
         )
 
         elapsed_ms = (time.perf_counter() - start_time) * 1000

@@ -23,13 +23,16 @@ class OllamaLLMClient(LLMClient):
         self.client = ollama.AsyncClient(host=base_url)
         self.prompt_builder = RAGPromptBuilder()
 
-    async def generate(self, prompt: str, context: list[str]) -> str:
+    async def generate(
+        self, prompt: str, context: list[str], conversation_history: list[dict[str, str]] | None = None
+    ) -> str:
         """
         Generate response using Ollama with RAG context.
 
         Args:
             prompt: User's question.
             context: List of relevant text chunks.
+            conversation_history: Previous messages in the conversation (optional).
 
         Returns:
             Generated response.
@@ -52,7 +55,7 @@ class OllamaLLMClient(LLMClient):
 
             # Build the RAG prompt
             full_prompt = self.prompt_builder.build_prompt(
-                query=prompt, context_chunks=chunks
+                query=prompt, context_chunks=chunks, conversation_history=conversation_history
             )
 
             # Call Ollama chat endpoint

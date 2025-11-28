@@ -12,6 +12,7 @@ class QueryRequest:
     query: str
     session_id: str
     top_k: int = 5
+    conversation_history: list[dict[str, str]] | None = None
 
 
 @dataclass
