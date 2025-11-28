@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { ref } from 'vue';
+import { TrashIcon } from '@heroicons/vue/24/outline';
 import type { Book } from '../types';
+import ConfirmDialog from './ConfirmDialog.vue';
 
 interface Props {
   books: Book[];
@@ -15,16 +18,28 @@ const emit = defineEmits<{
   clearAll: [];
 }>();
 
+const showDeleteDialog = ref(false);
+const showClearAllDialog = ref(false);
+const bookToDelete = ref<string | null>(null);
+
 function handleDelete(bookId: string) {
-  if (confirm('Are you sure you want to delete this book?')) {
-    emit('delete', bookId);
+  bookToDelete.value = bookId;
+  showDeleteDialog.value = true;
+}
+
+function confirmDelete() {
+  if (bookToDelete.value) {
+    emit('delete', bookToDelete.value);
+    bookToDelete.value = null;
   }
 }
 
 function handleClearAll() {
-  if (confirm('Are you sure you want to delete all books? This will clear your session.')) {
-    emit('clearAll');
-  }
+  showClearAllDialog.value = true;
+}
+
+function confirmClearAll() {
+  emit('clearAll');
 }
 </script>
 
@@ -104,16 +119,31 @@ function handleClearAll() {
             class="ml-4 text-red-600 hover:text-red-800 disabled:text-gray-400 flex-shrink-0"
             aria-label="Delete book"
           >
-            <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-              <path
-                fill-rule="evenodd"
-                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
-                clip-rule="evenodd"
-              />
-            </svg>
+            <TrashIcon class="h-5 w-5" />
           </button>
         </div>
       </li>
     </ul>
+
+    <!-- Confirm Dialogs -->
+    <ConfirmDialog
+      :open="showDeleteDialog"
+      title="Delete Book"
+      message="Are you sure you want to delete this book? This action cannot be undone."
+      confirm-text="Delete"
+      type="danger"
+      @confirm="confirmDelete"
+      @close="showDeleteDialog = false"
+    />
+
+    <ConfirmDialog
+      :open="showClearAllDialog"
+      title="Clear All Books"
+      message="Are you sure you want to delete all books? This will clear your entire session and cannot be undone."
+      confirm-text="Clear All"
+      type="danger"
+      @confirm="confirmClearAll"
+      @close="showClearAllDialog = false"
+    />
   </div>
 </template>

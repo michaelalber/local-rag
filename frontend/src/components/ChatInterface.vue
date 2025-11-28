@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, watch } from 'vue';
+import { TransitionGroup } from '@headlessui/vue';
+import { PaperAirplaneIcon } from '@heroicons/vue/24/solid';
 import type { Message } from '../types';
 import ChatMessage from './ChatMessage.vue';
+import ConfirmDialog from './ConfirmDialog.vue';
 import { useApi } from '../composables/useApi';
 
 interface Props {
@@ -16,6 +19,7 @@ const messages = ref<Message[]>([]);
 const queryInput = ref('');
 const topK = ref(5);
 const messagesContainer = ref<HTMLElement | null>(null);
+const showClearChatDialog = ref(false);
 
 const canSendMessage = computed(() => {
   return props.hasBooks && queryInput.value.trim().length > 0 && !loading.value;
@@ -87,9 +91,13 @@ function handleKeyDown(event: KeyboardEvent) {
 }
 
 function clearChat() {
-  if (messages.value.length > 0 && confirm('Clear chat history?')) {
-    messages.value = [];
+  if (messages.value.length > 0) {
+    showClearChatDialog.value = true;
   }
+}
+
+function confirmClearChat() {
+  messages.value = [];
 }
 </script>
 
@@ -166,11 +174,21 @@ function clearChat() {
         </div>
       </div>
 
-      <ChatMessage
-        v-for="message in messages"
-        :key="message.id"
-        :message="message"
-      />
+      <TransitionGroup
+        enter-active-class="transition ease-out duration-300"
+        enter-from-class="opacity-0 translate-y-4"
+        enter-to-class="opacity-100 translate-y-0"
+        leave-active-class="transition ease-in duration-200"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+        move-class="transition duration-300"
+      >
+        <ChatMessage
+          v-for="message in messages"
+          :key="message.id"
+          :message="message"
+        />
+      </TransitionGroup>
 
       <div v-if="loading" class="flex justify-start">
         <div class="bg-gray-100 rounded-lg px-4 py-3">
@@ -205,22 +223,21 @@ function clearChat() {
           :disabled="!canSendMessage"
           class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors self-end"
         >
-          <svg
-            class="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-            />
-          </svg>
+          <PaperAirplaneIcon class="h-5 w-5" />
         </button>
       </form>
     </div>
+
+    <!-- Confirm Dialog -->
+    <ConfirmDialog
+      :open="showClearChatDialog"
+      title="Clear Chat History"
+      message="Are you sure you want to clear all messages? This action cannot be undone."
+      confirm-text="Clear"
+      type="warning"
+      @confirm="confirmClearChat"
+      @close="showClearChatDialog = false"
+    />
   </div>
 </template>
 
