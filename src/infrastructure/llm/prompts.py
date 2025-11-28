@@ -6,10 +6,11 @@ from src.domain.entities import Chunk
 class RAGPromptBuilder:
     """Builds prompts for RAG (Retrieval-Augmented Generation)."""
 
-    def __init__(self, max_context_length: int = 6000):
+    def __init__(self, max_context_length: int = 120000):
         """
         Args:
             max_context_length: Maximum characters for context section.
+                              Default 120K allows ~80 parent chunks of 1500 chars each.
         """
         self.max_context_length = max_context_length
 
@@ -66,14 +67,18 @@ Context from relevant book sections:
 User Question: {query}
 
 Instructions:
-- Answer the question using only the information provided in the context above
-- Cite specific sources when making claims (reference page numbers or chapters)
-- If the context doesn't contain enough information to fully answer the question, acknowledge this
-- Be concise and accurate
-- Use direct quotes when appropriate
+- Answer ONLY using information from the context sections above - do not use general knowledge
+- Prioritize specific, detailed evidence from the context over general summaries or introductions
+- Focus on the most relevant and substantive content that directly addresses the question
+- Cite specific sources when making claims (ALWAYS reference page numbers or chapters from the context)
+- If the context contains conflicting information, present both viewpoints with their sources
+- If the context doesn't contain enough information, acknowledge this limitation
+- Use direct quotes for important claims or findings, with page citations
+- Be comprehensive - draw from multiple context sections when they contain relevant information
 - Format your response using Markdown for better readability:
-  * Use **bold** for emphasis on key terms and important points
+  * Use **bold** for emphasis on key terms and important findings
   * Use bullet lists (- item) or numbered lists (1. item) when presenting multiple points
+  * Use > blockquotes for direct quotations from the source material
   * Use code blocks with syntax highlighting (```language) for code examples
   * Use inline code (`code`) for technical terms, function names, or short code snippets
   * Use proper headings (##) if organizing a longer response into sections
