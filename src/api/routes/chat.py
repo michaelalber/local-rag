@@ -37,6 +37,7 @@ async def chat(
         session_id=session_id,
         top_k=chat_request.top_k,
         conversation_history=conversation_history,
+        model=chat_request.model,
     )
 
     response = await query_service.query(query_request)

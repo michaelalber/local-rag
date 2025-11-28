@@ -18,6 +18,7 @@ class ChatRequest(BaseModel):
     query: str = Field(..., min_length=1, max_length=2000)
     top_k: int = Field(default=5, ge=1, le=20)
     history: list[ChatMessage] = Field(default_factory=list, max_length=20)
+    model: str | None = Field(default=None, description="Ollama model to use (e.g., 'mistral', 'codellama')")
 
 
 class SourceResponse(BaseModel):

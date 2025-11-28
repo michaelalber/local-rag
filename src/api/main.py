@@ -7,7 +7,7 @@ from src.domain.exceptions import BookChatError
 
 from .config import get_settings
 from .exception_handlers import book_chat_error_handler
-from .routes import books_router, chat_router, health_router
+from .routes import books_router, chat_router, health_router, models_router
 
 
 def create_app() -> FastAPI:
@@ -36,6 +36,7 @@ def create_app() -> FastAPI:
     app.include_router(health_router, prefix=settings.api_prefix)
     app.include_router(books_router, prefix=settings.api_prefix)
     app.include_router(chat_router, prefix=settings.api_prefix)
+    app.include_router(models_router, prefix=settings.api_prefix)
 
     return app
 

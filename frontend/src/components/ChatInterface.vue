@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, nextTick, watch } from 'vue';
-import { TransitionGroup } from '@headlessui/vue';
-import { PaperAirplaneIcon } from '@heroicons/vue/24/solid';
+import { ref, computed, nextTick, watch, onMounted } from 'vue';
+import { TransitionGroup, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue';
+import { PaperAirplaneIcon, CpuChipIcon, XMarkIcon } from '@heroicons/vue/24/solid';
 import type { Message } from '../types';
 import ChatMessage from './ChatMessage.vue';
 import ConfirmDialog from './ConfirmDialog.vue';
@@ -11,15 +11,29 @@ interface Props {
   hasBooks: boolean;
 }
 
+interface OllamaModel {
+  id: string;
+  name: string;
+  description: string;
+  best_for: string[];
+  size: string;
+}
+
 const props = defineProps<Props>();
 
-const { chat, loading, error } = useApi();
+const { chat, getModels, loading, error } = useApi();
 
 const messages = ref<Message[]>([]);
 const queryInput = ref('');
 const topK = ref(5);
 const messagesContainer = ref<HTMLElement | null>(null);
 const showClearChatDialog = ref(false);
+const showModelSelector = ref(false);
+const availableModels = ref<OllamaModel[]>([]);
+const selectedModel = ref<string | null>(
+  sessionStorage.getItem('selectedModel') || null
+);
+const defaultModel = ref<string>('mistral:7b-instruct-q4_K_M');
 
 const canSendMessage = computed(() => {
   return props.hasBooks && queryInput.value.trim().length > 0 && !loading.value;
@@ -39,6 +53,33 @@ async function scrollToBottom() {
   if (messagesContainer.value) {
     messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight;
   }
+}
+
+onMounted(async () => {
+  try {
+    const response = await getModels();
+    availableModels.value = response.models;
+    defaultModel.value = response.default;
+  } catch (err) {
+    console.error('Failed to fetch models:', err);
+  }
+});
+
+const currentModelName = computed(() => {
+  const model = availableModels.value.find(m => m.id === selectedModel.value);
+  return model?.name || 'Default Model';
+});
+
+function selectModel(modelId: string) {
+  selectedModel.value = modelId;
+  sessionStorage.setItem('selectedModel', modelId);
+  showModelSelector.value = false;
+}
+
+function resetToDefault() {
+  selectedModel.value = null;
+  sessionStorage.removeItem('selectedModel');
+  showModelSelector.value = false;
 }
 
 async function handleSendMessage() {
@@ -64,7 +105,12 @@ async function handleSendMessage() {
       content: msg.content
     }));
 
-    const response = await chat(query, topK.value, history);
+    const response = await chat(
+      query,
+      topK.value,
+      history,
+      selectedModel.value || undefined
+    );
 
     const assistantMessage: Message = {
       id: crypto.randomUUID(),
@@ -113,6 +159,15 @@ function confirmClearChat() {
       <div class="flex items-center justify-between">
         <h2 class="text-xl font-semibold">Chat</h2>
         <div class="flex items-center space-x-4">
+          <button
+            @click="showModelSelector = true"
+            type="button"
+            class="flex items-center space-x-1 px-3 py-1 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+            title="Select Model"
+          >
+            <CpuChipIcon class="h-4 w-4" />
+            <span>{{ currentModelName }}</span>
+          </button>
           <div class="flex items-center space-x-2">
             <label for="topK" class="text-sm text-gray-600">
               Top K:
@@ -244,6 +299,112 @@ function confirmClearChat() {
       @confirm="confirmClearChat"
       @close="showClearChatDialog = false"
     />
+
+    <!-- Model Selector Modal -->
+    <Dialog :open="showModelSelector" @close="showModelSelector = false" class="relative z-50">
+      <div class="fixed inset-0 bg-black/30" aria-hidden="true" />
+
+      <div class="fixed inset-0 flex items-center justify-center p-4">
+        <DialogPanel class="mx-auto max-w-4xl w-full bg-white rounded-xl shadow-2xl max-h-[80vh] flex flex-col">
+          <!-- Header -->
+          <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+            <DialogTitle class="text-xl font-semibold text-gray-900">
+              Select Language Model
+            </DialogTitle>
+            <button
+              @click="showModelSelector = false"
+              class="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <XMarkIcon class="h-6 w-6" />
+            </button>
+          </div>
+
+          <!-- Model Grid -->
+          <div class="flex-1 overflow-y-auto p-6">
+            <div v-if="availableModels.length === 0" class="text-center py-12 text-gray-500">
+              <CpuChipIcon class="h-12 w-12 mx-auto mb-4 text-gray-400" />
+              <p>No models available. Is Ollama running?</p>
+            </div>
+
+            <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Default Model Card -->
+              <button
+                @click="resetToDefault"
+                class="text-left p-4 border-2 rounded-lg transition-all hover:shadow-lg"
+                :class="selectedModel === null
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-200 hover:border-gray-300'"
+              >
+                <div class="flex items-start justify-between mb-2">
+                  <div>
+                    <h3 class="font-semibold text-gray-900">Default Model</h3>
+                    <p class="text-xs text-gray-500 mt-1">{{ defaultModel }}</p>
+                  </div>
+                  <div v-if="selectedModel === null" class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                  </div>
+                </div>
+                <p class="text-sm text-gray-600 mb-3">Use the configured default model</p>
+                <div class="flex flex-wrap gap-1">
+                  <span class="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
+                    Recommended
+                  </span>
+                </div>
+              </button>
+
+              <!-- Available Models -->
+              <button
+                v-for="model in availableModels"
+                :key="model.id"
+                @click="selectModel(model.id)"
+                class="text-left p-4 border-2 rounded-lg transition-all hover:shadow-lg"
+                :class="selectedModel === model.id
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-200 hover:border-gray-300'"
+              >
+                <div class="flex items-start justify-between mb-2">
+                  <div>
+                    <h3 class="font-semibold text-gray-900">{{ model.name }}</h3>
+                    <p class="text-xs text-gray-500 mt-1">{{ model.size }}</p>
+                  </div>
+                  <div v-if="selectedModel === model.id" class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                  </div>
+                </div>
+
+                <p class="text-sm text-gray-600 mb-3">{{ model.description }}</p>
+
+                <div class="space-y-2">
+                  <div>
+                    <p class="text-xs font-medium text-gray-700 mb-1">Best for:</p>
+                    <div class="flex flex-wrap gap-1">
+                      <span
+                        v-for="use in model.best_for"
+                        :key="use"
+                        class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs"
+                      >
+                        {{ use }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </button>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="px-6 py-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
+            <p class="text-sm text-gray-600">
+              Selected model will be used for all future queries in this session.
+            </p>
+          </div>
+        </DialogPanel>
+      </div>
+    </Dialog>
   </div>
 </template>
 

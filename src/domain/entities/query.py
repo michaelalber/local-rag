@@ -13,6 +13,7 @@ class QueryRequest:
     session_id: str
     top_k: int = 5
     conversation_history: list[dict[str, str]] | None = None
+    model: str | None = None
 
 
 @dataclass

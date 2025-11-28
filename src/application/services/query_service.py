@@ -90,6 +90,7 @@ class QueryService:
             prompt=request.query,
             context=context,
             conversation_history=request.conversation_history,
+            model=request.model,
         )
 
         elapsed_ms = (time.perf_counter() - start_time) * 1000

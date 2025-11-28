@@ -8,7 +8,11 @@ class LLMClient(ABC):
 
     @abstractmethod
     async def generate(
-        self, prompt: str, context: list[str], conversation_history: list[dict[str, str]] | None = None
+        self,
+        prompt: str,
+        context: list[str],
+        conversation_history: list[dict[str, str]] | None = None,
+        model: str | None = None,
     ) -> str:
         """
         Generate response using context.
@@ -17,6 +21,7 @@ class LLMClient(ABC):
             prompt: User question.
             context: Relevant text chunks for RAG.
             conversation_history: Previous messages in the conversation (optional).
+            model: Override default model for this request (optional).
 
         Returns:
             Generated response.

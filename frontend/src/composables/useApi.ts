@@ -89,18 +89,48 @@ export function useApi() {
     }
   }
 
-  async function chat(query: string, topK: number = 5, history: Array<{role: string, content: string}> = []): Promise<ChatResponse> {
+  async function getModels() {
     loading.value = true;
     error.value = null;
 
     try {
+      const response = await fetch(`${API_BASE}/models`);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch models: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Failed to fetch models';
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function chat(
+    query: string,
+    topK: number = 5,
+    history: Array<{role: string, content: string}> = [],
+    model?: string
+  ): Promise<ChatResponse> {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const body: any = { query, top_k: topK, history };
+      if (model) {
+        body.model = model;
+      }
+
       const response = await fetch(`${API_BASE}/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'session-id': SESSION_ID,
         },
-        body: JSON.stringify({ query, top_k: topK, history }),
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
@@ -146,6 +176,7 @@ export function useApi() {
     uploadBooks,
     getBooks,
     deleteBook,
+    getModels,
     chat,
     clearSession,
     sessionId: SESSION_ID,

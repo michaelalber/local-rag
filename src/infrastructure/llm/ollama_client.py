@@ -24,7 +24,11 @@ class OllamaLLMClient(LLMClient):
         self.prompt_builder = RAGPromptBuilder()
 
     async def generate(
-        self, prompt: str, context: list[str], conversation_history: list[dict[str, str]] | None = None
+        self,
+        prompt: str,
+        context: list[str],
+        conversation_history: list[dict[str, str]] | None = None,
+        model: str | None = None,
     ) -> str:
         """
         Generate response using Ollama with RAG context.
@@ -33,6 +37,7 @@ class OllamaLLMClient(LLMClient):
             prompt: User's question.
             context: List of relevant text chunks.
             conversation_history: Previous messages in the conversation (optional).
+            model: Override default model for this request (optional).
 
         Returns:
             Generated response.
@@ -58,9 +63,12 @@ class OllamaLLMClient(LLMClient):
                 query=prompt, context_chunks=chunks, conversation_history=conversation_history
             )
 
+            # Use provided model or default
+            selected_model = model if model else self.model
+
             # Call Ollama chat endpoint
             response = await self.client.chat(
-                model=self.model,
+                model=selected_model,
                 messages=[{"role": "user", "content": full_prompt}],
                 stream=False,
             )
