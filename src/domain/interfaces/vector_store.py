@@ -57,3 +57,23 @@ class VectorStore(ABC):
     async def collection_exists(self, collection_id: str) -> bool:
         """Check if collection exists."""
         pass
+
+    @abstractmethod
+    async def get_neighbor_chunks(
+        self, chunks: list[Chunk], collection_id: str, window: int = 1
+    ) -> list[Chunk]:
+        """
+        Get neighboring chunks for contextual retrieval.
+
+        For each chunk, fetches neighboring chunks within ±window sequence numbers.
+        Deduplicates and sorts by sequence number.
+
+        Args:
+            chunks: Initial retrieved chunks.
+            collection_id: Collection to search.
+            window: Number of neighbors to include on each side (default 1).
+
+        Returns:
+            All chunks including neighbors, sorted by (book_id, sequence_number).
+        """
+        pass

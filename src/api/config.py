@@ -26,6 +26,7 @@ class Settings(BaseSettings):
 
     # RAG
     top_k_chunks: int = 5
+    neighbor_window: int = 1  # Number of neighboring chunks to include (±N)
 
     # API
     api_prefix: str = "/api"

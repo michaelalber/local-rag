@@ -86,6 +86,7 @@ def get_ingestion_service(
 
 
 def get_query_service(
+    settings: Annotated[Settings, Depends(get_settings)],
     vector_store: Annotated[VectorStore, Depends(get_vector_store)],
     embedder: Annotated[EmbeddingService, Depends(get_embedder)],
     llm_client: Annotated[LLMClient, Depends(get_llm_client)],
@@ -95,4 +96,5 @@ def get_query_service(
         vector_store=vector_store,
         embedder=embedder,
         llm_client=llm_client,
+        neighbor_window=settings.neighbor_window,
     )

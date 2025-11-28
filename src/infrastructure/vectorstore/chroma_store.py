@@ -129,16 +129,118 @@ class ChromaVectorStore(VectorStore):
         collection = self.client.get_collection(collection_name)
 
         # Delete all chunks with matching book_id
+        book_id_str = str(book_id)
         try:
-            collection.delete(where={"book_id": str(book_id)})
-        except Exception:
-            pass  # Chunks may not exist, that's fine
+            # First, verify chunks exist for this book
+            count_before = collection.count()
+
+            # Perform the delete
+            collection.delete(where={"book_id": book_id_str})
+
+            # Verify deletion worked
+            count_after = collection.count()
+            deleted_count = count_before - count_after
+
+            if deleted_count > 0:
+                print(f"✓ Deleted {deleted_count} chunks for book {book_id_str}")
+            else:
+                print(f"⚠ No chunks found to delete for book {book_id_str}")
+
+        except Exception as e:
+            # Log the actual error instead of silently swallowing it
+            print(f"✗ Error deleting chunks for book {book_id_str}: {e}")
+            raise  # Re-raise to surface the issue
 
     async def collection_exists(self, collection_id: str) -> bool:
         """Check if collection exists."""
         collection_name = self._sanitize_collection_name(collection_id)
         existing = [c.name for c in self.client.list_collections()]
         return collection_name in existing
+
+    async def get_neighbor_chunks(
+        self, chunks: list[Chunk], collection_id: str, window: int = 1
+    ) -> list[Chunk]:
+        """Get neighboring chunks for contextual retrieval."""
+        if not chunks or window < 1:
+            return chunks
+
+        collection_name = self._sanitize_collection_name(collection_id)
+
+        # Check if collection exists
+        existing = [c.name for c in self.client.list_collections()]
+        if collection_name not in existing:
+            return chunks
+
+        collection = self.client.get_collection(collection_name)
+
+        # Build set of sequence numbers to fetch for each book
+        chunks_to_fetch = {}  # book_id -> set of sequence numbers
+
+        for chunk in chunks:
+            book_id_str = str(chunk.book_id)
+            if book_id_str not in chunks_to_fetch:
+                chunks_to_fetch[book_id_str] = set()
+
+            # Add the chunk itself and its neighbors
+            seq = chunk.sequence_number
+            for offset in range(-window, window + 1):
+                target_seq = seq + offset
+                if target_seq >= 0:  # Don't fetch negative sequence numbers
+                    chunks_to_fetch[book_id_str].add(target_seq)
+
+        # Fetch all chunks from ChromaDB
+        all_chunks = []
+        for book_id_str, seq_numbers in chunks_to_fetch.items():
+            # ChromaDB doesn't support complex queries, so we need to fetch
+            # all chunks for this book and filter in memory
+            try:
+                results = collection.get(
+                    where={"book_id": book_id_str},
+                    include=["documents", "metadatas", "embeddings"],
+                )
+
+                if results["ids"]:
+                    for i, chunk_id in enumerate(results["ids"]):
+                        metadata = results["metadatas"][i] if results["metadatas"] else {}
+                        chunk_seq = metadata.get("sequence_number", 0)
+
+                        # Only include chunks in our target sequence range
+                        if chunk_seq in seq_numbers:
+                            # Check for embeddings safely
+                            embedding = None
+                            if results.get("embeddings") is not None and i < len(results["embeddings"]):
+                                embedding = results["embeddings"][i]
+
+                            chunk = Chunk(
+                                id=UUID(chunk_id),
+                                book_id=UUID(book_id_str),
+                                content=results["documents"][i] if results["documents"] else "",
+                                page_number=metadata.get("page_number")
+                                if metadata.get("page_number", -1) != -1
+                                else None,
+                                chapter=metadata.get("chapter") or None,
+                                embedding=embedding,
+                                has_code=metadata.get("has_code", False),
+                                code_language=metadata.get("code_language") or None,
+                                sequence_number=chunk_seq,
+                                parent_chunk_id=UUID(metadata["parent_chunk_id"])
+                                if metadata.get("parent_chunk_id")
+                                else None,
+                                parent_content=metadata.get("parent_content") or None,
+                            )
+                            all_chunks.append(chunk)
+
+            except Exception as e:
+                print(f"⚠ Error fetching neighbors for book {book_id_str}: {e}")
+                continue
+
+        # Deduplicate by chunk ID and sort by book_id, sequence_number
+        unique_chunks = {chunk.id: chunk for chunk in all_chunks}
+        sorted_chunks = sorted(
+            unique_chunks.values(), key=lambda c: (str(c.book_id), c.sequence_number)
+        )
+
+        return sorted_chunks
 
     def _sanitize_collection_name(self, name: str) -> str:
         """
