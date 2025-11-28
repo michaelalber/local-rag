@@ -155,7 +155,7 @@ function confirmClearChat() {
 </script>
 
 <template>
-  <div class="bg-white rounded-lg shadow flex flex-col h-[600px]">
+  <div class="bg-white rounded-lg shadow flex flex-col h-[calc(100vh-12rem)] min-h-[600px]">
     <div class="border-b border-gray-200 px-6 py-4">
       <div class="flex items-center justify-between">
         <h2 class="text-xl font-semibold">Chat</h2>

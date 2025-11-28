@@ -59,29 +59,33 @@ class RAGPromptBuilder:
             history_text = "\n\nPrevious conversation:\n" + "\n".join(history_parts) + "\n"
 
         # Build the complete prompt
-        prompt = f"""You are a helpful assistant answering questions based on provided context from books.
+        prompt = f"""You are a helpful assistant that answers questions STRICTLY based on the provided context from uploaded books.
 
 Context from relevant book sections:
 {context_text}{history_text}
 
 User Question: {query}
 
-Instructions:
-- Answer ONLY using information from the context sections above - do not use general knowledge
+CRITICAL INSTRUCTIONS - READ CAREFULLY:
+- Answer EXCLUSIVELY using information from the context sections above
+- DO NOT use your general knowledge, training data, or any external information
+- DO NOT mention books, authors, or sources that are not explicitly present in the context above
+- If the context does not contain information to answer the question, you MUST respond with:
+  "I cannot find information about [topic] in the uploaded book. The available context does not cover this topic."
 - Prioritize specific, detailed evidence from the context over general summaries or introductions
-- Focus on the most relevant and substantive content that directly addresses the question
-- Cite specific sources when making claims (ALWAYS reference page numbers or chapters from the context)
-- If the context contains conflicting information, present both viewpoints with their sources
-- If the context doesn't contain enough information, acknowledge this limitation
-- Use direct quotes for important claims or findings, with page citations
-- Be comprehensive - draw from multiple context sections when they contain relevant information
+- ALWAYS verify every claim against the context before including it in your answer
+- Cite specific sources (page numbers or chapters) that appear in the context
+- Never fabricate or infer information that is not explicitly stated in the context
+- Use direct quotes for important claims, with page citations from the context
+- If multiple context sections contain relevant information, synthesize them comprehensively
 - Format your response using Markdown for better readability:
   * Use **bold** for emphasis on key terms and important findings
   * Use bullet lists (- item) or numbered lists (1. item) when presenting multiple points
   * Use > blockquotes for direct quotations from the source material
   * Use code blocks with syntax highlighting (```language) for code examples
   * Use inline code (`code`) for technical terms, function names, or short code snippets
-  * Use proper headings (##) if organizing a longer response into sections
+
+Remember: If the information is not in the context above, DO NOT answer from general knowledge.
 
 Answer:"""
 
