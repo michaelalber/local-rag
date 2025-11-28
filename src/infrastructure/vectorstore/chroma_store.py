@@ -46,6 +46,9 @@ class ChromaVectorStore(VectorStore):
                 "chapter": c.chapter or "",
                 "has_code": c.has_code,
                 "code_language": c.code_language or "",
+                "sequence_number": c.sequence_number,
+                "parent_chunk_id": str(c.parent_chunk_id) if c.parent_chunk_id else "",
+                "parent_content": c.parent_content or "",
             }
             for c in chunks
         ]
@@ -98,6 +101,9 @@ class ChromaVectorStore(VectorStore):
                     embedding=results["embeddings"][0][i] if results.get("embeddings") else None,
                     has_code=metadata.get("has_code", False),
                     code_language=metadata.get("code_language") or None,
+                    sequence_number=metadata.get("sequence_number", 0),
+                    parent_chunk_id=UUID(metadata["parent_chunk_id"]) if metadata.get("parent_chunk_id") else None,
+                    parent_content=metadata.get("parent_content") or None,
                 )
                 chunks.append(chunk)
 

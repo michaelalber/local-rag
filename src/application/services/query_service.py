@@ -47,8 +47,9 @@ class QueryService:
             top_k=request.top_k,
         )
 
-        # Build context from chunks
-        context = [chunk.content for chunk in chunks]
+        # Build context from chunks using parent content for hierarchical chunking
+        # Use parent_content if available (hierarchical chunking), otherwise use content (backward compat)
+        context = [chunk.parent_content if chunk.parent_content else chunk.content for chunk in chunks]
 
         # Generate answer with conversation history
         answer = await self.llm_client.generate(

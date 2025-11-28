@@ -59,10 +59,10 @@ class BookIngestionService:
         title, author = parser.parse(file_path)
         text_segments = parser.extract_text(file_path)
 
-        # Chunk all segments
+        # Chunk all segments with hierarchical chunking
         all_chunks_data = []
         for text, metadata in text_segments:
-            chunk_dicts = self.chunker.chunk(text, metadata)
+            chunk_dicts = self.chunker.chunk_hierarchical(text, metadata)
             all_chunks_data.extend(chunk_dicts)
 
         # Create book entity
@@ -81,18 +81,22 @@ class BookIngestionService:
         texts = [c["text"] for c in all_chunks_data]
         embeddings = self.embedder.embed(texts)
 
-        # Create Chunk entities
+        # Create Chunk entities with hierarchical fields
         chunks = []
         for chunk_data, embedding in zip(all_chunks_data, embeddings):
+            metadata = chunk_data["metadata"]
             chunk = Chunk(
                 id=uuid4(),
                 book_id=book_id,
                 content=chunk_data["text"],
-                page_number=chunk_data["metadata"].get("page_number"),
-                chapter=chunk_data["metadata"].get("chapter"),
+                page_number=metadata.get("page_number"),
+                chapter=metadata.get("chapter"),
                 embedding=embedding,
-                has_code=chunk_data["metadata"].get("has_code", False),
-                code_language=chunk_data["metadata"].get("code_language"),
+                has_code=metadata.get("has_code", False),
+                code_language=metadata.get("code_language"),
+                sequence_number=metadata.get("sequence_number", 0),
+                parent_chunk_id=metadata.get("parent_chunk_id"),
+                parent_content=metadata.get("parent_content"),
             )
             chunks.append(chunk)
 

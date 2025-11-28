@@ -1,19 +1,26 @@
 """Text chunking for embedding."""
 
 import re
+from uuid import UUID, uuid4
 
 
 class TextChunker:
     """Splits text into overlapping chunks for embedding, with code-aware splitting."""
 
-    def __init__(self, chunk_size: int = 512, overlap: int = 50):
+    def __init__(
+        self, chunk_size: int = 512, overlap: int = 50, parent_chunk_size: int = 1500, children_per_parent: int = 3
+    ):
         """
         Args:
-            chunk_size: Target size of each chunk in characters.
+            chunk_size: Target size of each child chunk in characters.
             overlap: Number of characters to overlap between chunks.
+            parent_chunk_size: Target size of parent chunks for context (3-4x child size).
+            children_per_parent: Number of child chunks to group into one parent.
         """
         self.chunk_size = chunk_size
         self.overlap = overlap
+        self.parent_chunk_size = parent_chunk_size
+        self.children_per_parent = children_per_parent
 
     def _detect_code_blocks(self, text: str) -> list[tuple[int, int, str | None]]:
         """
@@ -128,3 +135,49 @@ class TextChunker:
             start = end - self.overlap if end < len(text) else end
 
         return chunks
+
+    def chunk_hierarchical(self, text: str, metadata: dict) -> list[dict]:
+        """
+        Create hierarchical chunks with parent context.
+
+        Creates child chunks for retrieval and groups them into parent chunks
+        for providing broader context to the LLM.
+
+        Args:
+            text: Text to chunk.
+            metadata: Metadata to attach to each chunk.
+
+        Returns:
+            List of child chunks with parent context attached.
+        """
+        # First create regular child chunks
+        child_chunks = self.chunk(text, metadata)
+
+        if not child_chunks:
+            return []
+
+        hierarchical_chunks = []
+
+        # Group child chunks into parents
+        for i, child in enumerate(child_chunks):
+            # Calculate parent group this child belongs to
+            parent_index = i // self.children_per_parent
+            parent_start = parent_index * self.children_per_parent
+            parent_end = min(parent_start + self.children_per_parent, len(child_chunks))
+
+            # Combine chunks for parent content
+            parent_texts = [child_chunks[j]["text"] for j in range(parent_start, parent_end)]
+            parent_content = "\n\n".join(parent_texts)
+
+            # Create parent chunk ID (same for all children in this parent group)
+            parent_id = uuid4()
+
+            # Add hierarchical metadata
+            chunk_with_hierarchy = child.copy()
+            chunk_with_hierarchy["metadata"]["sequence_number"] = i
+            chunk_with_hierarchy["metadata"]["parent_chunk_id"] = str(parent_id)
+            chunk_with_hierarchy["metadata"]["parent_content"] = parent_content
+
+            hierarchical_chunks.append(chunk_with_hierarchy)
+
+        return hierarchical_chunks
