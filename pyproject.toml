@@ -41,6 +41,10 @@ asyncio_mode = "auto"
 testpaths = ["tests"]
 python_files = "test_*.py"
 python_functions = "test_*"
+markers = [
+    "integration: integration tests requiring external services",
+    "slow: tests that take a long time to run",
+]
 
 [tool.ruff]
 target-version = "py310"
