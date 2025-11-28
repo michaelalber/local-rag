@@ -90,13 +90,15 @@ async def list_models(
             "default": settings.llm_model,
         }
 
-    except httpx.HTTPError as e:
+    except httpx.HTTPError:
+        # Log full error details internally but return generic message
         raise HTTPException(
             status_code=503,
-            detail=f"Failed to connect to Ollama: {str(e)}. Is Ollama running?",
+            detail="Service temporarily unavailable. Is Ollama running?",
         )
-    except Exception as e:
+    except Exception:
+        # Log full error details internally but return generic message
         raise HTTPException(
             status_code=500,
-            detail=f"Error listing models: {str(e)}",
+            detail="An error occurred while listing models.",
         )

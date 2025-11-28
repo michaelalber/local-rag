@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     chroma_persist_dir: Path = Path("./data/chroma")
 
     # Limits
-    max_file_size_mb: int = 150
+    max_file_size_mb: int = 50  # Reduced from 150MB for security
     max_books_per_session: int = 5
     chunk_size: int = 512
     chunk_overlap: int = 50

@@ -7,6 +7,7 @@ from src.domain.exceptions import BookChatError
 
 from .config import get_settings
 from .exception_handlers import book_chat_error_handler
+from .middleware import SecurityHeadersMiddleware
 from .routes import books_router, chat_router, health_router, models_router
 
 
@@ -20,13 +21,16 @@ def create_app() -> FastAPI:
         version="0.1.0",
     )
 
+    # Security headers
+    app.add_middleware(SecurityHeadersMiddleware)
+
     # CORS for frontend
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
         allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_methods=["GET", "POST", "DELETE"],  # Only required methods
+        allow_headers=["Content-Type", "session-id"],  # Only required headers
     )
 
     # Exception handlers

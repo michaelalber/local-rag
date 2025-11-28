@@ -30,7 +30,7 @@ const ALLOWED_TYPES = [
   'text/x-rst',
   'text/html',
 ];
-const MAX_SIZE_MB = 150;
+const MAX_SIZE_MB = 50; // Reduced from 150MB for security
 
 const remainingSlots = computed(() => props.maxBooks - props.currentBookCount);
 const canAddMore = computed(() => remainingSlots.value > 0);

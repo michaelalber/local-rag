@@ -4,17 +4,17 @@ version = "0.1.0"
 description = "Local eBook RAG application"
 requires-python = ">=3.10"
 dependencies = [
-    "fastapi>=0.115.0",
-    "uvicorn[standard]>=0.32.0",
-    "chromadb>=0.5.0",
-    "sentence-transformers>=3.0.0",
-    "ollama>=0.4.0",
-    "pypdf>=5.0.0",
-    "ebooklib>=0.18",
-    "pydantic-settings>=2.6.0",
-    "python-multipart>=0.0.12",
-    "beautifulsoup4>=4.12.0",
-    "lxml>=5.0.0",
+    "fastapi>=0.115.0,<0.116.0",
+    "uvicorn[standard]>=0.32.0,<0.33.0",
+    "chromadb>=0.5.0,<0.6.0",
+    "sentence-transformers>=3.0.0,<4.0.0",
+    "ollama>=0.4.0,<0.5.0",
+    "pypdf>=5.0.0,<6.0.0",
+    "ebooklib>=0.18,<0.19",
+    "pydantic-settings>=2.6.0,<3.0.0",
+    "python-multipart>=0.0.12,<0.1.0",
+    "beautifulsoup4>=4.12.0,<5.0.0",
+    "lxml>=5.0.0,<6.0.0",
 ]
 
 [project.optional-dependencies]
@@ -26,6 +26,11 @@ dev = [
     "ruff>=0.8.0",
     "black>=24.0.0",
     "fpdf2>=2.7.0",
+]
+security = [
+    "bandit>=1.7.5",  # Security linting
+    "safety>=2.3.5",  # Dependency vulnerability scanning
+    "pip-audit>=2.6.0",  # Audit dependencies for vulnerabilities
 ]
 
 [build-system]
