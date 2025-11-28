@@ -16,7 +16,7 @@ A privacy-focused, local-first RAG (Retrieval-Augmented Generation) application 
 ## Tech Stack
 
 ### Backend
-- **Python 3.11+** with type hints
+- **Python 3.10+** with type hints
 - **FastAPI** - Modern async web framework
 - **ChromaDB** - Vector database for embeddings
 - **Ollama** - Local LLM inference
@@ -36,7 +36,7 @@ A privacy-focused, local-first RAG (Retrieval-Augmented Generation) application 
 
 ## Prerequisites
 
-- **Python 3.11+**
+- **Python 3.10+**
 - **Node.js 18+** and npm
 - **Ollama** - [Install from ollama.ai](https://ollama.ai)
 - **Hardware**:
