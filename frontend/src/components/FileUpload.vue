@@ -19,15 +19,22 @@ const selectedFiles = ref<File[]>([]);
 const isDragging = ref(false);
 const fileInput = ref<HTMLInputElement | null>(null);
 
-const ALLOWED_TYPES = ['application/pdf', 'application/epub+zip'];
+const ALLOWED_TYPES = [
+  'application/pdf',
+  'application/epub+zip',
+  'text/markdown',
+  'text/plain',
+  'text/x-rst',
+  'text/html',
+];
 const MAX_SIZE_MB = 50;
 
 const remainingSlots = computed(() => props.maxBooks - props.currentBookCount);
 const canAddMore = computed(() => remainingSlots.value > 0);
 
 function validateFile(file: File): string | null {
-  if (!ALLOWED_TYPES.includes(file.type) && !file.name.match(/\.(pdf|epub)$/i)) {
-    return `${file.name}: Only PDF and EPUB files are supported`;
+  if (!ALLOWED_TYPES.includes(file.type) && !file.name.match(/\.(pdf|epub|md|txt|rst|html|htm)$/i)) {
+    return `${file.name}: Only PDF, EPUB, Markdown, Text, RST, and HTML files are supported`;
   }
 
   const sizeMB = file.size / (1024 * 1024);
@@ -135,7 +142,7 @@ function handleDragLeave() {
         ref="fileInput"
         type="file"
         multiple
-        accept=".pdf,.epub,application/pdf,application/epub+zip"
+        accept=".pdf,.epub,.md,.txt,.rst,.html,.htm,application/pdf,application/epub+zip,text/markdown,text/plain,text/x-rst,text/html"
         @change="handleFileSelect"
         class="hidden"
         :disabled="!canAddMore"
@@ -160,7 +167,7 @@ function handleDragLeave() {
         <span class="font-semibold">Click to upload</span> or drag and drop
       </p>
       <p class="text-xs text-gray-500 mt-1">
-        PDF or EPUB files (max {{ MAX_SIZE_MB }}MB each)
+        PDF, EPUB, Markdown, Text, RST, or HTML files (max {{ MAX_SIZE_MB }}MB each)
       </p>
       <p class="text-xs text-gray-500">
         {{ remainingSlots }} slot(s) available

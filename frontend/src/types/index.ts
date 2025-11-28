@@ -11,6 +11,8 @@ export interface Source {
   page_number: number | null;
   chapter: string | null;
   book_id: string;
+  has_code: boolean;
+  code_language: string | null;
 }
 
 export interface ChatResponse {
