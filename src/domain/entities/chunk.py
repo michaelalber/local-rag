@@ -14,3 +14,5 @@ class Chunk:
     page_number: int | None = None
     chapter: str | None = None
     embedding: list[float] | None = None
+    has_code: bool = False
+    code_language: str | None = None

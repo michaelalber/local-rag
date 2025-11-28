@@ -6,7 +6,11 @@ from src.domain.exceptions import UnsupportedFileTypeError
 from src.domain.interfaces import DocumentParser
 
 from .epub_parser import EpubParser
+from .html_parser import HTMLParser
+from .markdown_parser import MarkdownParser
 from .pdf_parser import PdfParser
+from .rst_parser import ReStructuredTextParser
+from .text_parser import TextParser
 
 
 def get_parser(file_path: Path) -> DocumentParser:
@@ -27,6 +31,11 @@ def get_parser(file_path: Path) -> DocumentParser:
     parsers = {
         ".pdf": PdfParser,
         ".epub": EpubParser,
+        ".md": MarkdownParser,
+        ".txt": TextParser,
+        ".rst": ReStructuredTextParser,
+        ".html": HTMLParser,
+        ".htm": HTMLParser,  # .htm also maps to HTMLParser
     }
 
     parser_class = parsers.get(ext)

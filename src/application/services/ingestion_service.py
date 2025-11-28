@@ -91,6 +91,8 @@ class BookIngestionService:
                 page_number=chunk_data["metadata"].get("page_number"),
                 chapter=chunk_data["metadata"].get("chapter"),
                 embedding=embedding,
+                has_code=chunk_data["metadata"].get("has_code", False),
+                code_language=chunk_data["metadata"].get("code_language"),
             )
             chunks.append(chunk)
 

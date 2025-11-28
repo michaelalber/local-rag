@@ -44,6 +44,8 @@ class ChromaVectorStore(VectorStore):
                 "book_id": str(c.book_id),
                 "page_number": c.page_number or -1,
                 "chapter": c.chapter or "",
+                "has_code": c.has_code,
+                "code_language": c.code_language or "",
             }
             for c in chunks
         ]
@@ -94,6 +96,8 @@ class ChromaVectorStore(VectorStore):
                     else None,
                     chapter=metadata.get("chapter") or None,
                     embedding=results["embeddings"][0][i] if results.get("embeddings") else None,
+                    has_code=metadata.get("has_code", False),
+                    code_language=metadata.get("code_language") or None,
                 )
                 chunks.append(chunk)
 

@@ -9,8 +9,15 @@ from src.domain.exceptions import FileSizeLimitError, UnsupportedFileTypeError
 class FileValidator:
     """Validates uploaded files for security and compatibility."""
 
-    ALLOWED_EXTENSIONS = {".pdf", ".epub"}
-    ALLOWED_MIME_TYPES = {"application/pdf", "application/epub+zip"}
+    ALLOWED_EXTENSIONS = {".pdf", ".epub", ".md", ".txt", ".rst", ".html", ".htm"}
+    ALLOWED_MIME_TYPES = {
+        "application/pdf",
+        "application/epub+zip",
+        "text/markdown",
+        "text/plain",
+        "text/x-rst",
+        "text/html",
+    }
 
     def __init__(self, max_size_mb: int = 50):
         self.max_size_bytes = max_size_mb * 1024 * 1024
