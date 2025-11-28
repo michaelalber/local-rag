@@ -138,8 +138,8 @@ function formatTime(date: Date): string {
             v-html="formattedContent"
           ></div>
 
-          <div v-if="message.sources && message.sources.length > 0" class="mt-3 space-y-2">
-            <p class="text-xs font-semibold text-gray-600 mb-2">Sources:</p>
+          <div v-if="message.sources && message.sources.length > 0" class="mt-3 flex items-center gap-2 flex-wrap">
+            <span class="text-xs text-gray-500">Sources:</span>
             <SourceCitation
               v-for="(source, index) in message.sources"
               :key="index"

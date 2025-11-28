@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { computed } from 'vue';
+import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue';
 import hljs from 'highlight.js/lib/core';
 import 'highlight.js/styles/github.css';
 
@@ -40,14 +41,8 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const isExpanded = ref(false);
-
-function toggleExpanded() {
-  isExpanded.value = !isExpanded.value;
-}
-
-function getSourceLabel(): string {
-  const parts: string[] = [`[${props.index + 1}]`];
+function getSourceTitle(): string {
+  const parts: string[] = [];
 
   if (props.source.chapter) {
     parts.push(props.source.chapter);
@@ -61,7 +56,7 @@ function getSourceLabel(): string {
     parts.push(`(${props.source.code_language})`);
   }
 
-  return parts.join(' ');
+  return parts.join(' · ');
 }
 
 const formattedContent = computed(() => {
@@ -86,45 +81,32 @@ const formattedContent = computed(() => {
 </script>
 
 <template>
-  <div class="border border-gray-200 rounded-lg overflow-hidden">
-    <button
-      @click="toggleExpanded"
-      type="button"
-      class="w-full px-4 py-3 bg-gray-50 hover:bg-gray-100 text-left flex items-center justify-between transition-colors"
+  <Popover class="relative inline-block">
+    <PopoverButton
+      class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition-colors"
     >
-      <span class="font-medium text-sm text-gray-700">
-        {{ getSourceLabel() }}
-      </span>
-      <svg
-        :class="['h-5 w-5 text-gray-500 transition-transform', isExpanded && 'rotate-180']"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M19 9l-7 7-7-7"
-        />
-      </svg>
-    </button>
+      [{{ index + 1 }}]
+    </PopoverButton>
 
-    <div
-      v-if="isExpanded"
-      class="px-4 py-3 bg-white border-t border-gray-200"
+    <PopoverPanel
+      class="absolute z-10 mt-2 w-96 max-w-sm bg-white rounded-lg shadow-lg border border-gray-200 focus:outline-none"
     >
-      <div
-        v-if="source.has_code"
-        class="text-sm text-gray-700 leading-relaxed prose prose-sm max-w-none"
-        v-html="formattedContent"
-      ></div>
-      <p
-        v-else
-        class="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed"
-      >
-        {{ source.content }}
-      </p>
-    </div>
-  </div>
+      <div class="p-4">
+        <div class="text-xs font-semibold text-gray-900 mb-2">
+          {{ getSourceTitle() }}
+        </div>
+        <div
+          v-if="source.has_code"
+          class="text-xs text-gray-700 leading-relaxed prose prose-sm max-w-none overflow-auto max-h-64"
+          v-html="formattedContent"
+        ></div>
+        <p
+          v-else
+          class="text-xs text-gray-700 whitespace-pre-wrap leading-relaxed overflow-auto max-h-64"
+        >
+          {{ source.content }}
+        </p>
+      </div>
+    </PopoverPanel>
+  </Popover>
 </template>
