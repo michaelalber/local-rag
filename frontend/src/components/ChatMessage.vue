@@ -1,12 +1,70 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+import MarkdownIt from 'markdown-it';
+import hljs from 'highlight.js/lib/core';
+import 'highlight.js/styles/github.css';
+
+// Import languages for code highlighting
+import javascript from 'highlight.js/lib/languages/javascript';
+import typescript from 'highlight.js/lib/languages/typescript';
+import python from 'highlight.js/lib/languages/python';
+import java from 'highlight.js/lib/languages/java';
+import cpp from 'highlight.js/lib/languages/cpp';
+import csharp from 'highlight.js/lib/languages/csharp';
+import go from 'highlight.js/lib/languages/go';
+import rust from 'highlight.js/lib/languages/rust';
+import sql from 'highlight.js/lib/languages/sql';
+import json from 'highlight.js/lib/languages/json';
+import xml from 'highlight.js/lib/languages/xml';
+import bash from 'highlight.js/lib/languages/bash';
+
 import type { Message } from '../types';
 import SourceCitation from './SourceCitation.vue';
+
+// Register languages
+hljs.registerLanguage('javascript', javascript);
+hljs.registerLanguage('typescript', typescript);
+hljs.registerLanguage('python', python);
+hljs.registerLanguage('java', java);
+hljs.registerLanguage('cpp', cpp);
+hljs.registerLanguage('csharp', csharp);
+hljs.registerLanguage('go', go);
+hljs.registerLanguage('rust', rust);
+hljs.registerLanguage('sql', sql);
+hljs.registerLanguage('json', json);
+hljs.registerLanguage('xml', xml);
+hljs.registerLanguage('bash', bash);
 
 interface Props {
   message: Message;
 }
 
 const props = defineProps<Props>();
+
+// Initialize markdown-it with syntax highlighting
+const md = new MarkdownIt({
+  html: false, // Disable HTML tags for security
+  linkify: true, // Auto-convert URLs to links
+  typographer: true, // Enable smart quotes and other typographic replacements
+  highlight: function (str, lang) {
+    if (lang && hljs.getLanguage(lang)) {
+      try {
+        return hljs.highlight(str, { language: lang, ignoreIllegals: true }).value;
+      } catch (e) {
+        console.error('Highlight error:', e);
+      }
+    }
+    return ''; // Use default escaping
+  }
+});
+
+const formattedContent = computed(() => {
+  if (props.message.role === 'user') {
+    return props.message.content;
+  }
+  // For assistant messages, render markdown
+  return md.render(props.message.content);
+});
 
 function formatTime(date: Date): string {
   return new Date(date).toLocaleTimeString('en-US', {
@@ -65,9 +123,20 @@ function formatTime(date: Date): string {
         </div>
 
         <div class="flex-1 min-w-0">
-          <p class="text-sm whitespace-pre-wrap break-words">
+          <!-- User messages: plain text -->
+          <p
+            v-if="message.role === 'user'"
+            class="text-sm whitespace-pre-wrap break-words"
+          >
             {{ message.content }}
           </p>
+
+          <!-- Assistant messages: rendered markdown with syntax highlighting -->
+          <div
+            v-else
+            class="prose prose-sm max-w-none text-sm text-gray-900"
+            v-html="formattedContent"
+          ></div>
 
           <div v-if="message.sources && message.sources.length > 0" class="mt-3 space-y-2">
             <p class="text-xs font-semibold text-gray-600 mb-2">Sources:</p>
