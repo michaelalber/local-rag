@@ -170,7 +170,8 @@ export function useApi() {
     query: string,
     topK: number = 5,
     history: Array<{role: string, content: string}> = [],
-    model?: string
+    model?: string,
+    retrievalPercentage?: number
   ): Promise<ChatResponse> {
     loading.value = true;
     error.value = null;
@@ -179,6 +180,9 @@ export function useApi() {
       const body: any = { query, top_k: topK, history };
       if (model) {
         body.model = model;
+      }
+      if (retrievalPercentage !== undefined) {
+        body.retrieval_percentage = retrievalPercentage;
       }
 
       const response = await fetch(`${API_BASE}/chat`, {

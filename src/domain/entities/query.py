@@ -11,7 +11,8 @@ class QueryRequest:
 
     query: str
     session_id: str
-    top_k: int = 5
+    top_k: int = 5  # Deprecated: use retrieval_percentage instead
+    retrieval_percentage: float | None = None  # Percentage of chunks to retrieve (0.5-2.0)
     conversation_history: list[dict[str, str]] | None = None
     model: str | None = None
 

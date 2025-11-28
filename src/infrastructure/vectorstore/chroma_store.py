@@ -77,6 +77,17 @@ class ChromaVectorStore(VectorStore):
             if total_chunks > BATCH_SIZE:
                 print(f"  ✓ Added batch {i//BATCH_SIZE + 1}/{(total_chunks + BATCH_SIZE - 1)//BATCH_SIZE} ({end_idx}/{total_chunks} chunks)")
 
+    async def get_collection_size(self, collection_id: str) -> int:
+        """Get total number of chunks in collection."""
+        collection_name = self._sanitize_collection_name(collection_id)
+
+        existing = [c.name for c in self.client.list_collections()]
+        if collection_name not in existing:
+            return 0
+
+        collection = self.client.get_collection(collection_name)
+        return collection.count()
+
     async def search(
         self, query_embedding: list[float], collection_id: str, top_k: int = 5
     ) -> list[Chunk]:

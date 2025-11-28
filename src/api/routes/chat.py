@@ -36,6 +36,7 @@ async def chat(
         query=chat_request.query,
         session_id=session_id,
         top_k=chat_request.top_k,
+        retrieval_percentage=chat_request.retrieval_percentage,
         conversation_history=conversation_history,
         model=chat_request.model,
     )

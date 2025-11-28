@@ -25,7 +25,7 @@ const { chat, getModels, loading, error } = useApi();
 
 const messages = ref<Message[]>([]);
 const queryInput = ref('');
-const topK = ref(5);
+const retrievalPercentage = ref(1.0);  // Default 1% retrieval
 const messagesContainer = ref<HTMLElement | null>(null);
 const showClearChatDialog = ref(false);
 const showModelSelector = ref(false);
@@ -107,9 +107,10 @@ async function handleSendMessage() {
 
     const response = await chat(
       query,
-      topK.value,
+      5,  // Legacy parameter (deprecated)
       history,
-      selectedModel.value || undefined
+      selectedModel.value || undefined,
+      retrievalPercentage.value
     );
 
     const assistantMessage: Message = {
@@ -169,17 +170,19 @@ function confirmClearChat() {
             <span>{{ currentModelName }}</span>
           </button>
           <div class="flex items-center space-x-2">
-            <label for="topK" class="text-sm text-gray-600">
-              Top K:
+            <label for="retrievalPercentage" class="text-sm text-gray-600" title="Percentage of document chunks to retrieve">
+              Retrieval:
             </label>
             <input
-              id="topK"
-              v-model.number="topK"
+              id="retrievalPercentage"
+              v-model.number="retrievalPercentage"
               type="number"
-              min="1"
-              max="20"
+              min="0.5"
+              max="2.0"
+              step="0.1"
               class="w-16 px-2 py-1 border border-gray-300 rounded text-sm"
             />
+            <span class="text-xs text-gray-500">%</span>
           </div>
           <button
             v-if="messages.length > 0"

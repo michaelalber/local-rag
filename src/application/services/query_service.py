@@ -40,6 +40,18 @@ class QueryService:
         """
         start_time = time.perf_counter()
 
+        # Calculate Top K based on percentage if provided
+        if request.retrieval_percentage is not None:
+            collection_size = await self.vector_store.get_collection_size(request.session_id)
+            if collection_size == 0:
+                top_k = 5  # Default if no collection
+            else:
+                # Calculate percentage-based Top K with min of 5 and max of 100
+                calculated_top_k = int(collection_size * (request.retrieval_percentage / 100))
+                top_k = max(5, min(100, calculated_top_k))
+        else:
+            top_k = request.top_k
+
         # Embed the query
         query_embedding = self.embedder.embed_query(request.query)
 
@@ -47,7 +59,7 @@ class QueryService:
         chunks = await self.vector_store.search(
             query_embedding=query_embedding,
             collection_id=request.session_id,
-            top_k=request.top_k,
+            top_k=top_k,
         )
 
         # Fetch neighboring chunks for contextual retrieval
