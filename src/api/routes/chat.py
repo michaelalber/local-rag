@@ -40,6 +40,8 @@ async def chat(
                 page_number=source.page_number,
                 chapter=source.chapter,
                 book_id=source.book_id,
+                has_code=source.has_code,
+                code_language=source.code_language,
             )
             for source in response.sources
         ],

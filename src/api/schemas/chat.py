@@ -19,6 +19,8 @@ class SourceResponse(BaseModel):
     page_number: int | None
     chapter: str | None
     book_id: UUID
+    has_code: bool = False
+    code_language: str | None = None
 
 
 class ChatResponse(BaseModel):
