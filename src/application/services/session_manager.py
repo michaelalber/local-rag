@@ -56,15 +56,14 @@ class SessionManager:
         """
         Remove a book from a session.
 
-        Raises:
-            BookNotFoundError: If book not found.
+        Silently succeeds if book not found (may have been removed or server restarted).
         """
         books = self._sessions.get(session_id, [])
         for i, book in enumerate(books):
             if book.id == book_id:
                 del books[i]
                 return
-        raise BookNotFoundError(f"Book {book_id} not found in session {session_id}")
+        # Don't raise - book may not be in memory after server restart
 
     def clear_session(self, session_id: str) -> None:
         """Remove all books from a session."""

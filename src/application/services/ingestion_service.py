@@ -6,6 +6,7 @@ from typing import Callable
 from uuid import uuid4
 
 from src.domain.entities import Book, Chunk
+from src.domain.exceptions import DocumentParsingError
 from src.domain.interfaces import DocumentParser, EmbeddingService, VectorStore
 from src.infrastructure.parsers import FileValidator, TextChunker
 
@@ -35,7 +36,7 @@ class BookIngestionService:
         self.vector_store = vector_store
         self.validator = validator
 
-    async def ingest_book(self, file_path: Path, session_id: str) -> Book:
+    async def ingest_book(self, file_path: Path, session_id: str, original_filename: str | None = None) -> Book:
         """
         Ingest a book: validate, parse, chunk, embed, and store.
 
@@ -56,8 +57,17 @@ class BookIngestionService:
 
         # Parse
         parser = self.parser_factory(file_path)
-        title, author = parser.parse(file_path)
-        text_segments = parser.extract_text(file_path)
+        try:
+            title, author = parser.parse(file_path)
+            text_segments = parser.extract_text(file_path)
+        except Exception as e:
+            raise DocumentParsingError(
+                f"Failed to parse document: {e}"
+            ) from e
+
+        # Use original filename as title fallback if title looks like a temp file
+        if original_filename and (not title or title.startswith("tmp") or len(title) < 3):
+            title = Path(original_filename).stem
 
         # Chunk all segments with hierarchical chunking
         all_chunks_data = []

@@ -22,9 +22,9 @@ A privacy-focused, local-first RAG (Retrieval-Augmented Generation) application 
 - **Python 3.10+** with type hints
 - **FastAPI** - Modern async web framework
 - **ChromaDB** - Vector database for embeddings
-- **Ollama** - Local LLM inference
-- **sentence-transformers** - Text embeddings (all-MiniLM-L6-v2)
-- **PyPDF2** & **EbookLib** - Document parsing
+- **Ollama** - Local LLM inference and embeddings
+- **sentence-transformers** - Alternative CPU-based embeddings
+- **pypdf** & **EbookLib** - Document parsing
 
 ### Frontend
 - **Vue 3** with Composition API
@@ -101,58 +101,67 @@ ollama serve
 
 #### Pull Models
 
-**Default Model (General Purpose):**
+**Recommended Setup:**
 ```bash
-ollama pull mistral:7b-instruct-q4_K_M
+# LLM Model - Best for RAG chat
+ollama pull llama3.1:8b
+
+# Embedding Model - High quality semantic search
+ollama pull mxbai-embed-large
 ```
 
-**Recommended Models for Different Content:**
+**Alternative Models:**
 ```bash
-# For programming/code books
+# Faster, smaller LLM
+ollama pull mistral:7b-instruct
+
+# For code-heavy technical books
 ollama pull codellama:7b
 
-# For legal/political documents
-ollama pull llama3:8b
-
-# For complex reasoning and large documents
-ollama pull mixtral:8x7b-instruct-q4_K_M
-
-# For multilingual content
-ollama pull yi:34b-chat-q4_K_M
+# Alternative embedding model (smaller)
+ollama pull nomic-embed-text
 ```
 
-See the [Models Guide](#ollama--models) section below for detailed model recommendations.
+See the [Models Guide](#ollama--models) section below for detailed recommendations.
 
 ## Usage
 
-### Start the Backend
+### Quick Start (Recommended)
 
+```bash
+./start-servers.sh
+```
+
+This script starts all services (Ollama, backend, frontend) and shows:
+- **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:8000
+- **API Docs**: http://localhost:8000/docs
+
+Press `Ctrl+C` to stop all servers.
+
+### Manual Start
+
+**Backend:**
 ```bash
 source .venv/bin/activate
 uvicorn src.api.main:app --reload --port 8000
 ```
 
-The API will be available at:
-- **API**: http://localhost:8000
-- **API Docs**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
-
-### Start the Frontend
-
+**Frontend:**
 ```bash
 cd frontend
 npm run dev
 ```
 
-The UI will be available at http://localhost:5173
-
 ### Using the Application
 
-1. **Upload Books**: Drag and drop PDF or EPUB files (max 150MB each, up to 5 books)
+1. **Upload Books**: Drag and drop PDF or EPUB files (max 100MB each, up to 5 books)
 2. **Select Model**: Click the model selector to choose the best LLM for your content
 3. **Ask Questions**: Type your question in the chat interface
 4. **View Sources**: Click on source citations to see the exact passages used
-5. **Adjust Top-K**: Control how many relevant passages to retrieve (1-20)
+5. **Adjust Retrieval %**: Control how much of the book to search (0.5-10%)
+   - **1-2%**: Best for specific questions ("What is encapsulation?")
+   - **5-10%**: Better for broad questions ("What is this book about?")
 6. **Delete Books**: Remove individual books or clear all with "Clear All"
 
 ## Project Structure
@@ -224,54 +233,55 @@ All endpoints require a `session-id` header for session isolation.
 
 ## Ollama & Models
 
-### Model Selection Guide
+### Recommended Configuration
 
-LocalBookChat includes a built-in model switcher that lets you choose the best LLM for your content type. Click the chip icon in the chat header to open the model selector.
+For the best RAG experience, we recommend:
 
-#### Recommended Models by Content Type
+| Component | Model | Size | Why |
+|-----------|-------|------|-----|
+| **LLM** | `llama3.1:8b` | 4.9GB | Best balance of quality and speed for RAG |
+| **Embeddings** | `mxbai-embed-large` | 669MB | High-quality 1024-dim embeddings |
 
-| Model | Size | Best For | Description |
-|-------|------|----------|-------------|
-| **Mistral 7B** | 4.1GB | General texts, business, history, literature | Balanced performance for most content. Fast and accurate. |
-| **Code Llama 7B** | 3.8GB | Programming books, technical docs, code examples | Specialized for code understanding and technical content. |
-| **Llama 3 8B** | 4.7GB | Legal documents, political texts, formal writing | Strong reasoning for complex legal and political analysis. |
-| **Mixtral 8x7B** | 26GB | Large documents, complex reasoning, research papers | Most powerful option, requires more RAM/VRAM. |
-| **Yi 34B Chat** | 19GB | Multilingual content, academic papers | Excellent for non-English texts and mixed languages. |
+### LLM Models for RAG
 
-### Installing Additional Models
+| Model | Size | Best For | Notes |
+|-------|------|----------|-------|
+| **llama3.1:8b** | 4.9GB | General RAG (recommended) | Great instruction following, good with context |
+| **mistral:7b-instruct** | 4.4GB | Fast responses | Good quality, slightly faster than llama3.1 |
+| **codellama:7b** | 3.8GB | Technical/code books | Specialized for programming content |
+| **gemma3:12b** | 8.1GB | Higher quality | Better answers, slower, needs more VRAM |
+| **llama3.3:70b** | 42GB | Best quality | Requires significant resources (CPU-bound without large GPU) |
+
+**Note:** `llama3-chatqa:8b` is specifically trained for QA but requires a special prompt format. Use `llama3.1:8b` for standard RAG.
+
+### Embedding Models
+
+| Model | Dimensions | Size | Notes |
+|-------|------------|------|-------|
+| **mxbai-embed-large** | 1024 | 669MB | Best quality (recommended) |
+| **nomic-embed-text** | 768 | 274MB | Good quality, smaller |
+| **all-MiniLM-L6-v2** | 384 | - | CPU-based, no Ollama needed |
+
+**Important:** If you change embedding models, you must re-upload your books. Embeddings are not compatible across different dimensions.
+
+### Model Commands
 
 ```bash
 # List installed models
 ollama list
 
-# Pull a specific model
-ollama pull <model-name>
+# Pull a model
+ollama pull llama3.1:8b
 
 # Remove a model
 ollama rm <model-name>
-
-# Check model details
-ollama show <model-name>
 ```
 
-### Model Switching in UI
+### System Requirements
 
-The application automatically detects all installed Ollama models and displays them in the model selector. Each model card shows:
-- Model name and description
-- Recommended use cases
-- Model size
-- Current selection status
-
-Your model preference persists across the browser session.
-
-### System Requirements by Model
-
-- **7B models** (Mistral, CodeLlama): 8GB RAM minimum, 16GB recommended
-- **8B models** (Llama3): 16GB RAM minimum, 24GB recommended
-- **Mixtral 8x7B**: 32GB RAM minimum, 64GB recommended
-- **Yi 34B**: 48GB RAM minimum, 64GB+ recommended
-
-GPU acceleration significantly improves performance for all models.
+- **8B models**: 8GB RAM minimum, 16GB recommended, GPU helps significantly
+- **12B models**: 16GB RAM, benefits greatly from GPU
+- **70B models**: 64GB+ RAM, runs on CPU (slow) or needs 48GB+ VRAM
 
 ## Configuration
 
@@ -283,20 +293,22 @@ UPLOAD_DIR=./data/uploads
 CHROMA_PERSIST_DIR=./data/chroma
 
 # Limits
-MAX_FILE_SIZE_MB=150
+MAX_FILE_SIZE_MB=100
 MAX_BOOKS_PER_SESSION=5
 CHUNK_SIZE=512
 CHUNK_OVERLAP=50
 
-# Models
-EMBEDDING_MODEL=all-MiniLM-L6-v2
-LLM_MODEL=mistral:7b-instruct-q4_K_M
+# Models (recommended settings)
+EMBEDDING_MODEL=mxbai-embed-large
+LLM_MODEL=llama3.1:8b
 OLLAMA_BASE_URL=http://localhost:11434
 
 # RAG Settings
 TOP_K_CHUNKS=5
 NEIGHBOR_WINDOW=1
 ```
+
+**Note:** Changing `EMBEDDING_MODEL` requires clearing ChromaDB (`rm -rf ./data/chroma/*`) and re-uploading books.
 
 ## Security Considerations
 
@@ -312,17 +324,15 @@ NEIGHBOR_WINDOW=1
 
 - **GPU Acceleration**: Ollama will use GPU if available (significantly faster)
 - **Model Selection**:
-  - 7B models (Mistral, CodeLlama): Fast, good for most content
-  - 8B models (Llama3): Balanced performance and quality
-  - Large models (Mixtral, Yi): Best quality, slower, requires more resources
-- **Top-K Tuning**:
-  - Lower values (3-5): Faster, more focused answers
-  - Medium values (10-15): Balanced comprehensiveness
-  - Higher values (15-20): Most comprehensive, best for complex queries
-- **Chunking Strategy**:
-  - Hierarchical chunking optimizes for large technical books
-  - Contextual retrieval includes neighboring chunks for continuity
-- **Batch Processing**: Automatically batches large document uploads (1000 chunks per batch)
+  - `llama3.1:8b`: Best balance for RAG
+  - `mistral:7b-instruct`: Slightly faster
+  - `gemma3:12b`: Better quality, needs more resources
+- **Retrieval Percentage**:
+  - **1-2%**: Fast, focused answers for specific questions
+  - **5%**: Good for topic summaries
+  - **10%**: Comprehensive, best for "what is this book about" questions
+- **Embedding Model**: `mxbai-embed-large` provides better semantic matching than smaller models
+- **Chunking**: Hierarchical chunking with neighbor window provides better context continuity
 
 ## Troubleshooting
 
@@ -340,6 +350,12 @@ NEIGHBOR_WINDOW=1
 - Delete `./data/chroma` directory to reset
 - Ensure sufficient disk space
 - For large documents, ensure 5GB+ free space
+
+**Embedding Dimension Mismatch Error**:
+- This happens when you change embedding models after uploading books
+- Clear ChromaDB: `rm -rf ./data/chroma/*`
+- Clear browser session storage (F12 → Application → Session Storage → Clear)
+- Re-upload your books
 
 **Large Document Upload Failures**:
 - Check file size limit in config (MAX_FILE_SIZE_MB)

@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.domain.exceptions import BookChatError
 
 from .config import get_settings
-from .exception_handlers import book_chat_error_handler
+from .exception_handlers import book_chat_error_handler, general_exception_handler
 from .middleware import SecurityHeadersMiddleware
 from .routes import books_router, chat_router, health_router, models_router
 
@@ -35,6 +35,7 @@ def create_app() -> FastAPI:
 
     # Exception handlers
     app.add_exception_handler(BookChatError, book_chat_error_handler)
+    app.add_exception_handler(Exception, general_exception_handler)
 
     # Routes
     app.include_router(health_router, prefix=settings.api_prefix)

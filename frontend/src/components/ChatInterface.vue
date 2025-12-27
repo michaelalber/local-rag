@@ -25,7 +25,7 @@ const { chat, getModels, loading, error } = useApi();
 
 const messages = ref<Message[]>([]);
 const queryInput = ref('');
-const retrievalPercentage = ref(1.0);  // Default 1% retrieval
+const retrievalPercentage = ref(2.0);  // Default 2% retrieval for better coverage
 const messagesContainer = ref<HTMLElement | null>(null);
 const showClearChatDialog = ref(false);
 const showModelSelector = ref(false);
@@ -178,7 +178,7 @@ function confirmClearChat() {
               v-model.number="retrievalPercentage"
               type="number"
               min="0.5"
-              max="2.0"
+              max="10.0"
               step="0.1"
               class="w-16 px-2 py-1 border border-gray-300 rounded text-sm"
             />

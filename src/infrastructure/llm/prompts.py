@@ -59,33 +59,21 @@ class RAGPromptBuilder:
             history_text = "\n\nPrevious conversation:\n" + "\n".join(history_parts) + "\n"
 
         # Build the complete prompt
-        prompt = f"""You are a helpful assistant that answers questions STRICTLY based on the provided context from uploaded books.
+        prompt = f"""You are a knowledgeable assistant helping a user explore and discuss their personal ebook library.
 
-Context from relevant book sections:
+Context from the uploaded book(s):
 {context_text}{history_text}
 
 User Question: {query}
 
-CRITICAL INSTRUCTIONS - READ CAREFULLY:
-- Answer EXCLUSIVELY using information from the context sections above
-- DO NOT use your general knowledge, training data, or any external information
-- DO NOT mention books, authors, or sources that are not explicitly present in the context above
-- If the context does not contain information to answer the question, you MUST respond with:
-  "I cannot find information about [topic] in the uploaded book. The available context does not cover this topic."
-- Prioritize specific, detailed evidence from the context over general summaries or introductions
-- ALWAYS verify every claim against the context before including it in your answer
-- Cite specific sources (page numbers or chapters) that appear in the context
-- Never fabricate or infer information that is not explicitly stated in the context
-- Use direct quotes for important claims, with page citations from the context
-- If multiple context sections contain relevant information, synthesize them comprehensively
-- Format your response using Markdown for better readability:
-  * Use **bold** for emphasis on key terms and important findings
-  * Use bullet lists (- item) or numbered lists (1. item) when presenting multiple points
-  * Use > blockquotes for direct quotations from the source material
-  * Use code blocks with syntax highlighting (```language) for code examples
-  * Use inline code (`code`) for technical terms, function names, or short code snippets
-
-Remember: If the information is not in the context above, DO NOT answer from general knowledge.
+Instructions:
+- Answer the user's question based on the book content provided above
+- Be conversational and helpful - explain concepts clearly
+- If the context contains exercises or quiz questions, ignore those and focus on the user's actual question
+- Summarize key points when appropriate
+- Cite page numbers when referencing specific information
+- If the context doesn't fully answer the question, say what you found and suggest the user try rephrasing or adjusting retrieval settings
+- Use Markdown formatting for readability (bold for key terms, lists for multiple points, code blocks for technical content)
 
 Answer:"""
 
@@ -111,17 +99,16 @@ Answer:"""
                 history_parts.append(f"{role}: {msg['content']}")
             history_text = "\n\nPrevious conversation:\n" + "\n".join(history_parts) + "\n"
 
-        prompt = f"""You are a helpful assistant answering questions based on provided context from books.
+        prompt = f"""You are a knowledgeable assistant helping a user explore their personal ebook library.
 
-Context: No relevant context found in the uploaded books for this query.{history_text}
+Context: No relevant passages were retrieved for this query.{history_text}
 
 User Question: {query}
 
-Instructions:
-- Inform the user that you cannot find relevant information in the uploaded books to answer their question
-- Suggest they may need to upload additional books or rephrase their query
-- Do not provide general knowledge answers; only answer based on uploaded book content
-- Format your response using Markdown (use **bold** for emphasis, bullet lists, etc.)
+The search didn't find matching content. Please:
+- Let the user know you couldn't find relevant passages
+- Suggest they try rephrasing the question or increasing the retrieval percentage
+- If this seems like a general question about the book (like "what is this book about"), suggest using a higher retrieval % (5-10%)
 
 Answer:"""
 

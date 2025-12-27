@@ -7,7 +7,17 @@ from fastapi import Depends
 
 from src.application.services import BookIngestionService, QueryService, SessionManager
 from src.domain.interfaces import EmbeddingService, LLMClient, VectorStore
-from src.infrastructure.embeddings import SentenceTransformerEmbedder
+from src.infrastructure.embeddings import OllamaEmbedder, SentenceTransformerEmbedder
+
+# Known Ollama embedding models
+OLLAMA_EMBEDDING_MODELS = {
+    "nomic-embed-text",
+    "nomic-embed-text:latest",
+    "mxbai-embed-large",
+    "mxbai-embed-large:latest",
+    "all-minilm",
+    "all-minilm:latest",
+}
 from src.infrastructure.llm import OllamaLLMClient
 from src.infrastructure.parsers import FileValidator, TextChunker, get_parser
 from src.infrastructure.vectorstore import ChromaVectorStore
@@ -17,8 +27,18 @@ from .config import Settings, get_settings
 
 @lru_cache
 def _get_embedder(settings: Settings) -> EmbeddingService:
-    """Get cached embedder instance."""
-    return SentenceTransformerEmbedder(model_name=settings.embedding_model)
+    """Get cached embedder instance, auto-detecting backend."""
+    model = settings.embedding_model
+
+    # Use Ollama for known Ollama models or models with `:` tag
+    if model in OLLAMA_EMBEDDING_MODELS or ":" in model:
+        return OllamaEmbedder(
+            model_name=model,
+            base_url=settings.ollama_base_url,
+        )
+
+    # Default to sentence-transformers for HuggingFace models
+    return SentenceTransformerEmbedder(model_name=model)
 
 
 def get_embedder(

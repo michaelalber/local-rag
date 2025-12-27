@@ -35,3 +35,9 @@ class SessionLimitError(BookChatError):
     """Raised when session book limit exceeded."""
 
     pass
+
+
+class DocumentParsingError(BookChatError):
+    """Raised when document parsing fails."""
+
+    pass

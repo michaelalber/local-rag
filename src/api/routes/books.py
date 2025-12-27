@@ -44,6 +44,7 @@ async def upload_books(
             book = await ingestion_service.ingest_book(
                 file_path=tmp_path,
                 session_id=session_id,
+                original_filename=upload_file.filename,
             )
 
             # Add to session

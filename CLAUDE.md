@@ -43,12 +43,17 @@ pytest                              # All tests
 pytest tests/unit/ -v               # Unit only
 pytest --cov=src --cov-report=term-missing
 
-# Run
+# Run (all servers)
+./start-servers.sh
+
+# Run (manual)
 uvicorn src.api.main:app --reload --port 8000
+cd frontend && npm run dev
 
 # Ollama
 ollama serve
-ollama pull mistral:7b-instruct-q4_K_M
+ollama pull llama3.1:8b           # LLM
+ollama pull mxbai-embed-large     # Embeddings
 
 # Lint
 ruff check src/ tests/
@@ -74,8 +79,9 @@ black src/ tests/
 
 ## Models
 
-- **Embeddings:** `all-MiniLM-L6-v2`
-- **LLM:** `mistral:7b-instruct-q4_K_M`
+- **Embeddings:** `mxbai-embed-large` (1024 dim, Ollama-based)
+- **LLM:** `llama3.1:8b` (best for RAG)
+- **Alternatives:** `mistral:7b-instruct` (faster), `nomic-embed-text` (smaller embeddings)
 
 ## Phase Execution
 
