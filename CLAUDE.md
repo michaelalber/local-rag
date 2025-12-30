@@ -11,25 +11,17 @@ Local eBook RAG app: upload 1-5 books (PDF/EPUB), chat with them using local LLM
 
 ```
 src/
-├── domain/           # Pure Python, no dependencies
-│   ├── entities/     # Book, Chunk, Query, Response
-│   ├── interfaces/   # ABCs for infrastructure
-│   └── exceptions.py
-├── infrastructure/   # External implementations
-│   ├── parsers/      # PDF, EPUB, chunking
-│   ├── embeddings/   # sentence-transformers
-│   ├── vectorstore/  # ChromaDB
-│   └── llm/          # Ollama client
-├── application/      # Use case orchestration
-│   └── services/     # Ingestion, Query, Session
-├── api/              # FastAPI
-│   ├── routes/
-│   ├── dependencies.py
-│   └── main.py
-└── tests/            # Mirrors src/
+├── models/       # Data classes (Book, Chunk, Query, Response)
+├── parsers/      # PDF, EPUB parsing + chunking
+├── embeddings/   # Ollama embeddings
+├── vectorstore/  # ChromaDB
+├── llm/          # Ollama LLM client
+├── services/     # Orchestration (Ingestion, Query)
+├── api/          # FastAPI routes
+└── tests/
 ```
 
-**Principles:** Clean Architecture + SOLID applied pragmatically. Domain defines interfaces; infrastructure implements them. Don't over-abstract.
+**Principles:** Flat structure, no layers. Add abstractions only after Rule of Three.
 
 ## Commands
 
@@ -60,6 +52,29 @@ ruff check src/ tests/
 black src/ tests/
 ```
 
+## Development Principles
+
+Three pillars: **TDD**, **Security by Design**, **YAGNI**
+
+**Test-Driven Development (TDD):**
+- Write tests before implementation for each module
+- Tests define the contract, implementation fulfills it
+- Test business logic and edge cases, not boilerplate
+- Run tests before moving to next phase
+
+**Security by Design (OWASP):**
+- Security is not an afterthought - build it in from the start
+- Validate all inputs at system boundaries
+- Follow OWASP guidelines for file handling, auth, and data protection
+- See Security Requirements section for specifics
+
+**YAGNI (You Aren't Gonna Need It):**
+- No abstract interfaces until needed
+- No repository pattern - direct JSON read/write
+- No dependency injection containers
+- No plugin architecture - simple match/case on file extension
+- Only apply abstractions after Rule of Three (3+ consumers)
+
 ## Code Standards
 
 - Type hints on all signatures
@@ -69,13 +84,21 @@ black src/ tests/
 - Specific exceptions, never bare `except:`
 - Async for I/O-bound operations
 
-## File Validation (OWASP)
+## Security Requirements (OWASP)
 
+All implementations must follow these security principles:
+
+**File Upload (A04:2021 - Insecure Design):**
 - Extensions: `.pdf`, `.epub` only
 - Verify MIME type, not just extension
 - Max size: 50MB (configurable)
-- Sanitize filenames
+- Sanitize filenames (remove path traversal, special chars)
 - Store uploads outside web root
+
+**Input Validation (A03:2021 - Injection):**
+- Validate and sanitize all user inputs
+- Use parameterized queries for any database operations
+- Never trust client-side validation alone
 
 ## Models
 
