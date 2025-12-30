@@ -11,17 +11,18 @@ Local eBook RAG app: upload 1-5 books (PDF/EPUB), chat with them using local LLM
 
 ```
 src/
-├── models/       # Data classes (Book, Chunk, Query, Response)
-├── parsers/      # PDF, EPUB parsing + chunking
-├── embeddings/   # Ollama embeddings
+├── models/       # Book, Chunk, Query, Response, exceptions
+├── parsers/      # PDF, EPUB, MD, TXT, HTML, RST + DocumentParser + chunker
+├── embeddings/   # Ollama, SentenceTransformer
 ├── vectorstore/  # ChromaDB
-├── llm/          # Ollama LLM client
-├── services/     # Orchestration (Ingestion, Query)
-├── api/          # FastAPI routes
-└── tests/
+├── llm/          # Ollama client + prompt builder
+├── services/     # Ingestion, Query, Session
+└── api/          # FastAPI (routes/, schemas/, middleware/)
+
+tests/            # Mirrors src/ structure
 ```
 
-**Principles:** Flat structure, no layers. Add abstractions only after Rule of Three.
+**Principles:** Flat structure, no layers. DocumentParser is the only interface (6 implementations). Add abstractions only after Rule of Three.
 
 ## Commands
 
@@ -89,9 +90,9 @@ Three pillars: **TDD**, **Security by Design**, **YAGNI**
 All implementations must follow these security principles:
 
 **File Upload (A04:2021 - Insecure Design):**
-- Extensions: `.pdf`, `.epub` only
-- Verify MIME type, not just extension
-- Max size: 50MB (configurable)
+- Extensions: `.pdf`, `.epub`, `.md`, `.txt`, `.rst`, `.html`
+- Verify MIME type via magic bytes (PDF: `%PDF`, EPUB: `PK`) or UTF-8 validation (text files)
+- Max size: 100MB (configurable)
 - Sanitize filenames (remove path traversal, special chars)
 - Store uploads outside web root
 
