@@ -3,38 +3,53 @@
 import re
 from pathlib import Path
 
-from src.domain.entities import Book
 from src.domain.interfaces import DocumentParser
 
 
 class ReStructuredTextParser(DocumentParser):
     """Parser for ReStructuredText (.rst) files."""
 
-    def parse(self, file_path: Path) -> Book:
+    def parse(self, file_path: Path) -> tuple[str, str | None]:
         """
-        Parse a ReStructuredText file.
+        Extract title and author from ReStructuredText file.
 
         Args:
             file_path: Path to .rst file.
 
         Returns:
-            Book entity with extracted content.
+            Tuple of (title, author). Author may be None.
         """
+        if not file_path.exists():
+            raise FileNotFoundError(f"RST file not found: {file_path}")
+
         with open(file_path, "r", encoding="utf-8") as f:
             content = f.read()
 
-        # Extract title from first heading
         title = self._extract_title(content, file_path)
-
-        # Extract author from field list if present
         author = self._extract_author(content)
 
-        return Book(
-            title=title,
-            author=author,
-            file_type="rst",
-            content=content,
-        )
+        return title, author
+
+    def extract_text(self, file_path: Path) -> list[tuple[str, dict]]:
+        """
+        Extract text from ReStructuredText file.
+
+        Args:
+            file_path: Path to .rst file.
+
+        Returns:
+            List of (text, metadata) tuples with section info.
+        """
+        if not file_path.exists():
+            raise FileNotFoundError(f"RST file not found: {file_path}")
+
+        with open(file_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        if not content.strip():
+            return []
+
+        return [(content, {"section": "content"})]
 
     def _extract_title(self, content: str, file_path: Path) -> str:
         """Extract title from first RST heading."""

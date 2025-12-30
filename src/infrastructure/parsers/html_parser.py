@@ -3,49 +3,67 @@
 import re
 from pathlib import Path
 
-from src.domain.entities import Book
 from src.domain.interfaces import DocumentParser
 
 
 class HTMLParser(DocumentParser):
     """Parser for HTML (.html) files."""
 
-    def parse(self, file_path: Path) -> Book:
+    def parse(self, file_path: Path) -> tuple[str, str | None]:
         """
-        Parse an HTML file.
+        Extract title and author from HTML file.
 
         Args:
             file_path: Path to .html file.
 
         Returns:
-            Book entity with extracted content.
+            Tuple of (title, author). Author may be None.
         """
+        if not file_path.exists():
+            raise FileNotFoundError(f"HTML file not found: {file_path}")
+
         try:
             from bs4 import BeautifulSoup
         except ImportError:
-            # Fallback to basic HTML stripping if BeautifulSoup not available
             return self._parse_without_bs4(file_path)
 
         with open(file_path, "r", encoding="utf-8") as f:
             html_content = f.read()
 
         soup = BeautifulSoup(html_content, "html.parser")
-
-        # Extract title from <title> tag or first <h1>
         title = self._extract_title_bs4(soup, file_path)
-
-        # Extract author from meta tag if present
         author = self._extract_author_bs4(soup)
 
-        # Get text content, preserving code blocks
+        return title, author
+
+    def extract_text(self, file_path: Path) -> list[tuple[str, dict]]:
+        """
+        Extract text from HTML file.
+
+        Args:
+            file_path: Path to .html file.
+
+        Returns:
+            List of (text, metadata) tuples with section info.
+        """
+        if not file_path.exists():
+            raise FileNotFoundError(f"HTML file not found: {file_path}")
+
+        try:
+            from bs4 import BeautifulSoup
+        except ImportError:
+            return self._extract_text_without_bs4(file_path)
+
+        with open(file_path, "r", encoding="utf-8") as f:
+            html_content = f.read()
+
+        soup = BeautifulSoup(html_content, "html.parser")
         content = self._extract_content_bs4(soup)
 
-        return Book(
-            title=title,
-            author=author,
-            file_type="html",
-            content=content,
-        )
+        if not content.strip():
+            return []
+
+        return [(content, {"section": "content"})]
 
     def _extract_title_bs4(self, soup, file_path: Path) -> str:
         """Extract title from HTML using BeautifulSoup."""
@@ -92,7 +110,7 @@ class HTMLParser(DocumentParser):
 
         return text
 
-    def _parse_without_bs4(self, file_path: Path) -> Book:
+    def _parse_without_bs4(self, file_path: Path) -> tuple[str, str | None]:
         """Fallback parser without BeautifulSoup."""
         with open(file_path, "r", encoding="utf-8") as f:
             html_content = f.read()
@@ -100,6 +118,13 @@ class HTMLParser(DocumentParser):
         # Extract title from <title> tag
         title_match = re.search(r"<title>(.*?)</title>", html_content, re.IGNORECASE)
         title = title_match.group(1).strip() if title_match else file_path.stem
+
+        return title, None
+
+    def _extract_text_without_bs4(self, file_path: Path) -> list[tuple[str, dict]]:
+        """Fallback text extraction without BeautifulSoup."""
+        with open(file_path, "r", encoding="utf-8") as f:
+            html_content = f.read()
 
         # Basic HTML tag removal
         text = re.sub(r"<script[^>]*>.*?</script>", "", html_content, flags=re.DOTALL | re.IGNORECASE)
@@ -117,9 +142,7 @@ class HTMLParser(DocumentParser):
         lines = [line.strip() for line in text.splitlines()]
         content = "\n".join(line for line in lines if line)
 
-        return Book(
-            title=title,
-            author=None,
-            file_type="html",
-            content=content,
-        )
+        if not content.strip():
+            return []
+
+        return [(content, {"section": "content"})]

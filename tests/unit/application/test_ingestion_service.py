@@ -27,7 +27,7 @@ class TestBookIngestionService:
     @pytest.fixture
     def mock_chunker(self):
         chunker = Mock()
-        chunker.chunk.return_value = [
+        chunker.chunk_hierarchical.return_value = [
             {"text": "Chunk 1", "metadata": {"page_number": 1}},
             {"text": "Chunk 2", "metadata": {"page_number": 1}},
         ]
@@ -117,7 +117,7 @@ class TestBookIngestionService:
         self, service: BookIngestionService, mock_chunker, tmp_path: Path
     ):
         # Mock returns 2 chunks per page, 2 pages = 4 total
-        mock_chunker.chunk.return_value = [
+        mock_chunker.chunk_hierarchical.return_value = [
             {"text": "C1", "metadata": {}},
             {"text": "C2", "metadata": {}},
         ]

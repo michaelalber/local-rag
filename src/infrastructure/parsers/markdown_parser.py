@@ -3,38 +3,69 @@
 import re
 from pathlib import Path
 
-from src.domain.entities import Book
 from src.domain.interfaces import DocumentParser
 
 
 class MarkdownParser(DocumentParser):
     """Parser for Markdown (.md) files."""
 
-    def parse(self, file_path: Path) -> Book:
+    def parse(self, file_path: Path) -> tuple[str, str | None]:
         """
-        Parse a Markdown file.
+        Extract title and author from Markdown file.
 
         Args:
             file_path: Path to .md file.
 
         Returns:
-            Book entity with extracted content.
+            Tuple of (title, author). Author may be None.
         """
+        if not file_path.exists():
+            raise FileNotFoundError(f"Markdown file not found: {file_path}")
+
         with open(file_path, "r", encoding="utf-8") as f:
             content = f.read()
 
-        # Extract title from first H1 or filename
         title = self._extract_title(content, file_path)
-
-        # Extract author from frontmatter if present
         author = self._extract_author(content)
 
-        return Book(
-            title=title,
-            author=author,
-            file_type="md",
-            content=content,
-        )
+        return title, author
+
+    def extract_text(self, file_path: Path) -> list[tuple[str, dict]]:
+        """
+        Extract text from Markdown file, split by sections.
+
+        Args:
+            file_path: Path to .md file.
+
+        Returns:
+            List of (text, metadata) tuples with section info.
+        """
+        if not file_path.exists():
+            raise FileNotFoundError(f"Markdown file not found: {file_path}")
+
+        with open(file_path, "r", encoding="utf-8") as f:
+            content = f.read()
+
+        # Remove YAML frontmatter if present
+        content = re.sub(r"^---\n.*?\n---\n?", "", content, flags=re.DOTALL)
+
+        if not content.strip():
+            return []
+
+        # Split by headings (## or more)
+        sections = re.split(r"^(#{1,6}\s+.+)$", content, flags=re.MULTILINE)
+
+        results = []
+        current_section = "Introduction"
+
+        for i, part in enumerate(sections):
+            if re.match(r"^#{1,6}\s+", part):
+                # This is a heading
+                current_section = re.sub(r"^#{1,6}\s+", "", part).strip()
+            elif part.strip():
+                results.append((part.strip(), {"section": current_section}))
+
+        return results if results else [(content.strip(), {"section": "content"})]
 
     def _extract_title(self, content: str, file_path: Path) -> str:
         """Extract title from first H1 heading or use filename."""
