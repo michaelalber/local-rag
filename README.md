@@ -4,7 +4,7 @@ A privacy-focused, local-first RAG (Retrieval-Augmented Generation) application 
 
 ## Features
 
-- 📚 **Multi-Book Support**: Upload up to 5 books per session (PDF/EPUB, up to 150MB each)
+- 📚 **Multi-Book Support**: Upload up to 5 books per session (PDF/EPUB, up to 50MB each)
 - 🔒 **Privacy First**: All data stays local - no cloud services or external APIs
 - 💬 **Interactive Chat**: Ask questions and get answers with source citations
 - 🎯 **Source Attribution**: See exactly which book passages informed each answer
@@ -19,7 +19,7 @@ A privacy-focused, local-first RAG (Retrieval-Augmented Generation) application 
 ## Tech Stack
 
 ### Backend
-- **Python 3.10+** with type hints
+- **Python 3.11+** with type hints
 - **FastAPI** - Modern async web framework
 - **ChromaDB** - Vector database for embeddings
 - **Ollama** - Local LLM inference and embeddings
@@ -33,13 +33,13 @@ A privacy-focused, local-first RAG (Retrieval-Augmented Generation) application 
 - **Tailwind CSS** - Utility-first styling
 
 ### Architecture
-- **Clean Architecture** - Separation of concerns with domain/infrastructure/application layers
-- **SOLID Principles** - Maintainable and testable code
-- **Test-Driven Development** - Comprehensive test coverage
+- **Flat Structure** - No layers, add abstractions only after Rule of Three
+- **TDD** - Test business logic and edge cases
+- **Security by Design** - OWASP guidelines built in from the start
 
 ## Prerequisites
 
-- **Python 3.10+**
+- **Python 3.11+**
 - **Node.js 18+** and npm
 - **Ollama** - [Install from ollama.ai](https://ollama.ai)
 - **Hardware**:
@@ -155,7 +155,7 @@ npm run dev
 
 ### Using the Application
 
-1. **Upload Books**: Drag and drop PDF or EPUB files (max 100MB each, up to 5 books)
+1. **Upload Books**: Drag and drop PDF or EPUB files (max 50MB each, up to 5 books)
 2. **Select Model**: Click the model selector to choose the best LLM for your content
 3. **Ask Questions**: Type your question in the chat interface
 4. **View Sources**: Click on source citations to see the exact passages used
@@ -169,30 +169,22 @@ npm run dev
 ```
 local-rag/
 ├── src/
-│   ├── domain/              # Pure business logic
-│   │   ├── entities/        # Book, Chunk, Query, Response
-│   │   ├── interfaces/      # Abstract base classes
-│   │   └── exceptions.py    # Domain exceptions
-│   ├── infrastructure/      # External implementations
-│   │   ├── parsers/         # PDF, EPUB, chunking
-│   │   ├── embeddings/      # sentence-transformers
-│   │   ├── vectorstore/     # ChromaDB
-│   │   └── llm/             # Ollama client
-│   ├── application/         # Use case orchestration
-│   │   └── services/        # Ingestion, Query, Session
-│   └── api/                 # FastAPI REST layer
-│       ├── routes/          # Endpoints
-│       ├── schemas/         # Pydantic models
-│       └── main.py          # App factory
+│   ├── models/          # Data classes (Book, Chunk, Query, Response)
+│   ├── parsers/         # PDF, EPUB parsing + chunking
+│   ├── embeddings/      # Ollama embeddings
+│   ├── vectorstore/     # ChromaDB
+│   ├── llm/             # Ollama LLM client
+│   ├── services/        # Orchestration (Ingestion, Query)
+│   ├── api/             # FastAPI routes
+│   └── tests/
 ├── frontend/
 │   ├── src/
-│   │   ├── components/      # Vue components
-│   │   ├── composables/     # Reusable logic
-│   │   └── types/           # TypeScript types
+│   │   ├── components/  # Vue components
+│   │   ├── composables/ # Reusable logic
+│   │   └── types/       # TypeScript types
 │   └── package.json
-├── tests/                   # Mirrors src/ structure
-├── docs/                    # Documentation
-└── pyproject.toml           # Python dependencies
+├── docs/                # Documentation
+└── pyproject.toml       # Python dependencies
 ```
 
 ## Development
@@ -293,7 +285,7 @@ UPLOAD_DIR=./data/uploads
 CHROMA_PERSIST_DIR=./data/chroma
 
 # Limits
-MAX_FILE_SIZE_MB=100
+MAX_FILE_SIZE_MB=50
 MAX_BOOKS_PER_SESSION=5
 CHUNK_SIZE=512
 CHUNK_OVERLAP=50
@@ -314,7 +306,7 @@ NEIGHBOR_WINDOW=1
 
 - File type validation (PDF/EPUB only)
 - MIME type verification
-- File size limits (150MB default, configurable)
+- File size limits (50MB default, configurable)
 - Filename sanitization
 - Upload directory isolation
 - CORS configuration for local development
