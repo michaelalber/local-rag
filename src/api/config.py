@@ -1,5 +1,6 @@
 """API configuration."""
 
+from functools import lru_cache
 from pathlib import Path
 
 from pydantic import ConfigDict
@@ -34,6 +35,7 @@ class Settings(BaseSettings):
     model_config = ConfigDict(env_file=".env", extra="ignore", frozen=True)
 
 
+@lru_cache
 def get_settings() -> Settings:
-    """Get cached settings instance."""
+    """Get cached settings instance (singleton)."""
     return Settings()

@@ -1,7 +1,11 @@
-"""FastAPI dependency injection."""
+"""FastAPI dependency injection.
+
+Singleton services are cached at module level for efficiency.
+FastAPI Depends() functions provide the DI integration.
+"""
 
 from functools import lru_cache
-from typing import Annotated, Union
+from typing import Annotated
 
 from fastapi import Depends
 
@@ -11,7 +15,7 @@ from src.parsers import FileValidator, TextChunker, get_parser
 from src.services import BookIngestionService, QueryService, SessionManager
 from src.vectorstore import ChromaVectorStore
 
-from .config import Settings, get_settings
+from .config import get_settings
 
 # Known Ollama embedding models
 OLLAMA_EMBEDDING_MODELS = {
@@ -24,12 +28,16 @@ OLLAMA_EMBEDDING_MODELS = {
 }
 
 # Type alias for embedders
-Embedder = Union[OllamaEmbedder, SentenceTransformerEmbedder]
+Embedder = OllamaEmbedder | SentenceTransformerEmbedder
+
+
+# --- Cached singletons (expensive to create) ---
 
 
 @lru_cache
-def _get_embedder(settings: Settings) -> Embedder:
+def get_embedder_singleton() -> Embedder:
     """Get cached embedder instance, auto-detecting backend."""
+    settings = get_settings()
     model = settings.embedding_model
 
     # Use Ollama for known Ollama models or models with `:` tag
@@ -43,58 +51,60 @@ def _get_embedder(settings: Settings) -> Embedder:
     return SentenceTransformerEmbedder(model_name=model)
 
 
-def get_embedder(
-    settings: Annotated[Settings, Depends(get_settings)]
-) -> Embedder:
-    """Get embedder with injected settings."""
-    return _get_embedder(settings)
-
-
 @lru_cache
-def _get_vector_store(settings: Settings) -> ChromaVectorStore:
+def get_vector_store_singleton() -> ChromaVectorStore:
     """Get cached vector store instance."""
+    settings = get_settings()
     settings.chroma_persist_dir.mkdir(parents=True, exist_ok=True)
     return ChromaVectorStore(persist_dir=settings.chroma_persist_dir)
 
 
-def get_vector_store(settings: Annotated[Settings, Depends(get_settings)]) -> ChromaVectorStore:
-    """Get vector store with injected settings."""
-    return _get_vector_store(settings)
-
-
 @lru_cache
-def _get_llm_client(settings: Settings) -> OllamaLLMClient:
+def get_llm_client_singleton() -> OllamaLLMClient:
     """Get cached LLM client instance."""
+    settings = get_settings()
     return OllamaLLMClient(
         model=settings.llm_model,
         base_url=settings.ollama_base_url,
     )
 
 
-def get_llm_client(settings: Annotated[Settings, Depends(get_settings)]) -> OllamaLLMClient:
-    """Get LLM client with injected settings."""
-    return _get_llm_client(settings)
-
-
 @lru_cache
-def _get_session_manager(settings: Settings) -> SessionManager:
-    """Get cached session manager instance."""
+def get_session_manager_singleton() -> SessionManager:
+    """Get cached session manager (holds session data in memory)."""
+    settings = get_settings()
     return SessionManager(max_books=settings.max_books_per_session)
 
 
-def get_session_manager(
-    settings: Annotated[Settings, Depends(get_settings)]
-) -> SessionManager:
-    """Get session manager with injected settings."""
-    return _get_session_manager(settings)
+# --- FastAPI dependency functions ---
+
+
+def get_embedder() -> Embedder:
+    """FastAPI dependency for embedder."""
+    return get_embedder_singleton()
+
+
+def get_vector_store() -> ChromaVectorStore:
+    """FastAPI dependency for vector store."""
+    return get_vector_store_singleton()
+
+
+def get_llm_client() -> OllamaLLMClient:
+    """FastAPI dependency for LLM client."""
+    return get_llm_client_singleton()
+
+
+def get_session_manager() -> SessionManager:
+    """FastAPI dependency for session manager."""
+    return get_session_manager_singleton()
 
 
 def get_ingestion_service(
-    settings: Annotated[Settings, Depends(get_settings)],
     embedder: Annotated[Embedder, Depends(get_embedder)],
     vector_store: Annotated[ChromaVectorStore, Depends(get_vector_store)],
 ) -> BookIngestionService:
-    """Get ingestion service with dependencies."""
+    """FastAPI dependency for ingestion service."""
+    settings = get_settings()
     return BookIngestionService(
         parser_factory=get_parser,
         chunker=TextChunker(
@@ -108,12 +118,12 @@ def get_ingestion_service(
 
 
 def get_query_service(
-    settings: Annotated[Settings, Depends(get_settings)],
     vector_store: Annotated[ChromaVectorStore, Depends(get_vector_store)],
     embedder: Annotated[Embedder, Depends(get_embedder)],
     llm_client: Annotated[OllamaLLMClient, Depends(get_llm_client)],
 ) -> QueryService:
-    """Get query service with dependencies."""
+    """FastAPI dependency for query service."""
+    settings = get_settings()
     return QueryService(
         vector_store=vector_store,
         embedder=embedder,
