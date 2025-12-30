@@ -1,5 +1,6 @@
 """ChromaDB vector store implementation."""
 
+import logging
 from pathlib import Path
 from uuid import UUID
 
@@ -8,6 +9,8 @@ from chromadb.config import Settings
 
 from src.domain.entities import Chunk
 from src.domain.interfaces import VectorStore
+
+logger = logging.getLogger(__name__)
 
 
 class ChromaVectorStore(VectorStore):
@@ -75,7 +78,13 @@ class ChromaVectorStore(VectorStore):
             )
 
             if total_chunks > BATCH_SIZE:
-                print(f"  ✓ Added batch {i//BATCH_SIZE + 1}/{(total_chunks + BATCH_SIZE - 1)//BATCH_SIZE} ({end_idx}/{total_chunks} chunks)")
+                logger.info(
+                    "Added batch %d/%d (%d/%d chunks)",
+                    i // BATCH_SIZE + 1,
+                    (total_chunks + BATCH_SIZE - 1) // BATCH_SIZE,
+                    end_idx,
+                    total_chunks,
+                )
 
     async def get_collection_size(self, collection_id: str) -> int:
         """Get total number of chunks in collection."""
@@ -140,7 +149,8 @@ class ChromaVectorStore(VectorStore):
         try:
             self.client.delete_collection(collection_name)
         except ValueError:
-            pass  # Collection doesn't exist, that's fine
+            # ChromaDB raises ValueError when collection doesn't exist
+            logger.debug("Collection %s doesn't exist, nothing to delete", collection_name)
 
     async def delete_book_chunks(self, collection_id: str, book_id: UUID) -> None:
         """Delete all chunks belonging to a specific book."""
@@ -156,25 +166,19 @@ class ChromaVectorStore(VectorStore):
         # Delete all chunks with matching book_id
         book_id_str = str(book_id)
         try:
-            # First, verify chunks exist for this book
             count_before = collection.count()
-
-            # Perform the delete
             collection.delete(where={"book_id": book_id_str})
-
-            # Verify deletion worked
             count_after = collection.count()
             deleted_count = count_before - count_after
 
             if deleted_count > 0:
-                print(f"✓ Deleted {deleted_count} chunks for book {book_id_str}")
+                logger.info("Deleted %d chunks for book %s", deleted_count, book_id_str)
             else:
-                print(f"⚠ No chunks found to delete for book {book_id_str}")
+                logger.debug("No chunks found to delete for book %s", book_id_str)
 
-        except Exception as e:
-            # Log the actual error instead of silently swallowing it
-            print(f"✗ Error deleting chunks for book {book_id_str}: {e}")
-            raise  # Re-raise to surface the issue
+        except chromadb.errors.ChromaError as e:
+            logger.error("ChromaDB error deleting chunks for book %s: %s", book_id_str, e)
+            raise
 
     async def collection_exists(self, collection_id: str) -> bool:
         """Check if collection exists."""
@@ -255,8 +259,8 @@ class ChromaVectorStore(VectorStore):
                             )
                             all_chunks.append(chunk)
 
-            except Exception as e:
-                print(f"⚠ Error fetching neighbors for book {book_id_str}: {e}")
+            except chromadb.errors.ChromaError as e:
+                logger.warning("Error fetching neighbors for book %s: %s", book_id_str, e)
                 continue
 
         # Deduplicate by chunk ID and sort by book_id, sequence_number

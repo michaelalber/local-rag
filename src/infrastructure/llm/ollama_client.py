@@ -1,11 +1,15 @@
 """Ollama LLM client implementation."""
 
+import logging
+
 import ollama
 
 from src.domain.entities import Chunk
 from src.domain.exceptions import LLMConnectionError
 from src.domain.interfaces import LLMClient
 from src.infrastructure.llm.prompts import RAGPromptBuilder
+
+logger = logging.getLogger(__name__)
 
 
 class OllamaLLMClient(LLMClient):
@@ -85,13 +89,16 @@ class OllamaLLMClient(LLMClient):
             return response["message"]["content"]
 
         except ollama.ResponseError as e:
+            logger.error("Ollama API error: %s", e)
             raise LLMConnectionError(f"Ollama API error: {e}") from e
+        except (ConnectionError, TimeoutError, OSError) as e:
+            logger.error("Failed to connect to Ollama server: %s", e)
+            raise LLMConnectionError(f"Failed to connect to Ollama server: {e}") from e
+        except LLMConnectionError:
+            raise
         except Exception as e:
-            if isinstance(e, LLMConnectionError):
-                raise
-            raise LLMConnectionError(
-                f"Failed to connect to Ollama server: {e}"
-            ) from e
+            logger.error("Unexpected error during LLM generation: %s", e)
+            raise LLMConnectionError(f"Unexpected error: {e}") from e
 
     async def health_check(self) -> bool:
         """
