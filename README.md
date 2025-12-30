@@ -1,10 +1,10 @@
 # LocalBookChat
 
-A privacy-focused, local-first RAG (Retrieval-Augmented Generation) application that lets you chat with your eBooks using a local LLM. Upload PDF or EPUB files and ask questions - all processing happens on your machine with no external API calls.
+A privacy-focused, local-first RAG (Retrieval-Augmented Generation) application that lets you chat with your eBooks using a local LLM. Upload PDF, EPUB, Markdown, or text files and ask questions - all processing happens on your machine with no external API calls.
 
 ## Features
 
-- 📚 **Multi-Book Support**: Upload up to 5 books per session (PDF/EPUB, up to 50MB each)
+- 📚 **Multi-Book Support**: Upload up to 5 books per session (PDF/EPUB/MD/TXT/RST/HTML, up to 100MB each)
 - 🔒 **Privacy First**: All data stays local - no cloud services or external APIs
 - 💬 **Interactive Chat**: Ask questions and get answers with source citations
 - 🎯 **Source Attribution**: See exactly which book passages informed each answer
@@ -24,7 +24,8 @@ A privacy-focused, local-first RAG (Retrieval-Augmented Generation) application 
 - **ChromaDB** - Vector database for embeddings
 - **Ollama** - Local LLM inference and embeddings
 - **sentence-transformers** - Alternative CPU-based embeddings
-- **pypdf** & **EbookLib** - Document parsing
+- **pypdf** & **EbookLib** - PDF/EPUB parsing
+- **Markdown, HTML, RST, TXT** - Text format support
 
 ### Frontend
 - **Vue 3** with Composition API
@@ -155,7 +156,7 @@ npm run dev
 
 ### Using the Application
 
-1. **Upload Books**: Drag and drop PDF or EPUB files (max 50MB each, up to 5 books)
+1. **Upload Books**: Drag and drop files (PDF, EPUB, MD, TXT, RST, HTML - max 100MB each, up to 5 books)
 2. **Select Model**: Click the model selector to choose the best LLM for your content
 3. **Ask Questions**: Type your question in the chat interface
 4. **View Sources**: Click on source citations to see the exact passages used
@@ -169,14 +170,14 @@ npm run dev
 ```
 local-rag/
 ├── src/
-│   ├── models/          # Data classes (Book, Chunk, Query, Response)
-│   ├── parsers/         # PDF, EPUB parsing + chunking
-│   ├── embeddings/      # Ollama embeddings
+│   ├── models/          # Book, Chunk, Query, Response, exceptions
+│   ├── parsers/         # PDF, EPUB, MD, TXT, HTML, RST + DocumentParser + chunker
+│   ├── embeddings/      # Ollama, SentenceTransformer
 │   ├── vectorstore/     # ChromaDB
-│   ├── llm/             # Ollama LLM client
-│   ├── services/        # Orchestration (Ingestion, Query)
-│   ├── api/             # FastAPI routes
-│   └── tests/
+│   ├── llm/             # Ollama client + prompt builder
+│   ├── services/        # Ingestion, Query, Session
+│   └── api/             # FastAPI (routes/, schemas/, middleware/)
+├── tests/               # Mirrors src/ structure
 ├── frontend/
 │   ├── src/
 │   │   ├── components/  # Vue components
@@ -285,7 +286,7 @@ UPLOAD_DIR=./data/uploads
 CHROMA_PERSIST_DIR=./data/chroma
 
 # Limits
-MAX_FILE_SIZE_MB=50
+MAX_FILE_SIZE_MB=100
 MAX_BOOKS_PER_SESSION=5
 CHUNK_SIZE=512
 CHUNK_OVERLAP=50
@@ -304,10 +305,10 @@ NEIGHBOR_WINDOW=1
 
 ## Security Considerations
 
-- File type validation (PDF/EPUB only)
-- MIME type verification
-- File size limits (50MB default, configurable)
-- Filename sanitization
+- File type validation (PDF, EPUB, MD, TXT, RST, HTML)
+- MIME type verification via magic bytes (PDF: `%PDF`, EPUB: `PK`) or UTF-8 validation (text files)
+- File size limits (100MB default, configurable)
+- Filename sanitization (path traversal prevention, special chars removed)
 - Upload directory isolation
 - CORS configuration for local development
 - Session-based data isolation
