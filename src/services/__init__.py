@@ -1,4 +1,4 @@
-"""Application services."""
+"""Business services."""
 
 from .ingestion_service import BookIngestionService
 from .query_service import QueryService

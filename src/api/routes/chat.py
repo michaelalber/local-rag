@@ -4,8 +4,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Header
 
-from src.application.services import QueryService
-from src.domain.entities import QueryRequest
+from src.models import QueryRequest
+from src.services import QueryService
 
 from ..dependencies import get_query_service
 from ..schemas import ChatRequest, ChatResponse, SourceResponse

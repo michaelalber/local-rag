@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.infrastructure.parsers.chunker import TextChunker
+from src.parsers import TextChunker
 
 
 class TestTextChunker:

@@ -8,8 +8,8 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, Header, UploadFile, status
 
-from src.application.services import BookIngestionService, SessionManager
-from src.infrastructure.vectorstore import ChromaVectorStore
+from src.services import BookIngestionService, SessionManager
+from src.vectorstore import ChromaVectorStore
 
 from ..dependencies import get_ingestion_service, get_session_manager, get_vector_store
 from ..schemas import BookResponse

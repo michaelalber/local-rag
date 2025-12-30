@@ -7,8 +7,8 @@ Run: ollama pull mistral:7b-instruct-q4_K_M
 
 import pytest
 
-from src.domain.exceptions import LLMConnectionError
-from src.infrastructure.llm.ollama_client import OllamaLLMClient
+from src.models import LLMConnectionError
+from src.llm import OllamaLLMClient
 
 
 @pytest.mark.integration

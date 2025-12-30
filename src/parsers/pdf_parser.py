@@ -4,7 +4,7 @@ from pathlib import Path
 
 from pypdf import PdfReader
 
-from src.domain.interfaces import DocumentParser
+from .base import DocumentParser
 
 
 class PdfParser(DocumentParser):

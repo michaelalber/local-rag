@@ -4,8 +4,8 @@ import pytest
 from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
-from src.application.services.query_service import QueryService
-from src.domain.entities import Chunk, QueryRequest, QueryResponse
+from src.services import QueryService
+from src.models import Chunk, QueryRequest, QueryResponse
 
 
 class TestQueryService:

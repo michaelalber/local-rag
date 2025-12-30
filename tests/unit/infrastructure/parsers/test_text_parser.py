@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from src.infrastructure.parsers.text_parser import TextParser
+from src.parsers import TextParser
 
 
 class TestTextParser:

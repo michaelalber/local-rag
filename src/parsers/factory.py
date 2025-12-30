@@ -2,8 +2,9 @@
 
 from pathlib import Path
 
-from src.domain.exceptions import UnsupportedFileTypeError
-from src.domain.interfaces import DocumentParser
+from src.models import UnsupportedFileTypeError
+
+from .base import DocumentParser
 
 from .epub_parser import EpubParser
 from .html_parser import HTMLParser

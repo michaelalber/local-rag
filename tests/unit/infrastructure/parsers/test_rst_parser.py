@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from src.infrastructure.parsers.rst_parser import ReStructuredTextParser
+from src.parsers import ReStructuredTextParser
 
 
 class TestReStructuredTextParser:

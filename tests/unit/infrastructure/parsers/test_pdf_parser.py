@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from src.infrastructure.parsers.pdf_parser import PdfParser
+from src.parsers import PdfParser
 
 
 class TestPdfParser:

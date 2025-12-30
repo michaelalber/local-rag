@@ -6,7 +6,7 @@ import ebooklib
 from bs4 import BeautifulSoup
 from ebooklib import epub
 
-from src.domain.interfaces import DocumentParser
+from .base import DocumentParser
 
 
 class EpubParser(DocumentParser):

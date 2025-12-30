@@ -1,5 +1,6 @@
-"""Document parsing infrastructure."""
+"""Document parsing."""
 
+from .base import DocumentParser
 from .chunker import TextChunker
 from .epub_parser import EpubParser
 from .factory import get_parser
@@ -11,6 +12,7 @@ from .text_parser import TextParser
 from .validator import FileValidator
 
 __all__ = [
+    "DocumentParser",
     "FileValidator",
     "TextChunker",
     "PdfParser",

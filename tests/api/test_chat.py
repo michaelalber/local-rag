@@ -3,7 +3,7 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from src.domain.exceptions import LLMConnectionError
+from src.models import LLMConnectionError
 
 
 class TestChatEndpoint:

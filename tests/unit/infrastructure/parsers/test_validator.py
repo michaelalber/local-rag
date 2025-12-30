@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from src.domain.exceptions import FileSizeLimitError, UnsupportedFileTypeError
-from src.infrastructure.parsers.validator import FileValidator
+from src.models import FileSizeLimitError, UnsupportedFileTypeError
+from src.parsers import FileValidator
 
 
 class TestFileValidator:

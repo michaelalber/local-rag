@@ -2,9 +2,9 @@
 
 import time
 
-from src.domain.entities import Chunk, QueryRequest, QueryResponse
-from src.infrastructure.vectorstore.chroma_store import ChromaVectorStore
-from src.infrastructure.llm.ollama_client import OllamaLLMClient
+from src.models import Chunk, QueryRequest, QueryResponse
+from src.vectorstore import ChromaVectorStore
+from src.llm import OllamaLLMClient
 
 
 class QueryService:

@@ -1,6 +1,6 @@
 """Tests for domain exceptions."""
 
-from src.domain.exceptions import (
+from src.models import (
     BookChatError,
     BookNotFoundError,
     FileSizeLimitError,

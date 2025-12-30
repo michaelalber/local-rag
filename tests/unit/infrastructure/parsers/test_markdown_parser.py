@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from src.infrastructure.parsers.markdown_parser import MarkdownParser
+from src.parsers import MarkdownParser
 
 
 class TestMarkdownParser:

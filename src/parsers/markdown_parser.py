@@ -3,7 +3,7 @@
 import re
 from pathlib import Path
 
-from src.domain.interfaces import DocumentParser
+from .base import DocumentParser
 
 
 class MarkdownParser(DocumentParser):

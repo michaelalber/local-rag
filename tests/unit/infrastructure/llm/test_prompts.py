@@ -4,8 +4,8 @@ from uuid import uuid4
 
 import pytest
 
-from src.domain.entities import Chunk
-from src.infrastructure.llm.prompts import RAGPromptBuilder
+from src.models import Chunk
+from src.llm import RAGPromptBuilder
 
 
 class TestRAGPromptBuilder:

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from src.infrastructure.parsers.html_parser import HTMLParser
+from src.parsers import HTMLParser
 
 
 class TestHTMLParser:

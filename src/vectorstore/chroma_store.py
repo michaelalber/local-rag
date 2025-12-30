@@ -7,7 +7,7 @@ from uuid import UUID
 import chromadb
 from chromadb.config import Settings
 
-from src.domain.entities import Chunk
+from src.models import Chunk
 
 logger = logging.getLogger(__name__)
 

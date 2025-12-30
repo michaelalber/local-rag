@@ -5,8 +5,8 @@ from uuid import uuid4
 
 import pytest
 
-from src.domain.entities import Chunk
-from src.infrastructure.vectorstore import ChromaVectorStore
+from src.models import Chunk
+from src.vectorstore import ChromaVectorStore
 
 
 class TestChromaVectorStore:

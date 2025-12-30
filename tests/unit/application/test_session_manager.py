@@ -5,9 +5,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
-from src.application.services.session_manager import SessionManager
-from src.domain.entities import Book
-from src.domain.exceptions import BookNotFoundError, SessionLimitError
+from src.services import SessionManager
+from src.models import Book, BookNotFoundError, SessionLimitError
 
 
 class TestSessionManager:

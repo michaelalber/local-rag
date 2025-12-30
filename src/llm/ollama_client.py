@@ -4,9 +4,9 @@ import logging
 
 import ollama
 
-from src.domain.entities import Chunk
-from src.domain.exceptions import LLMConnectionError
-from src.infrastructure.llm.prompts import RAGPromptBuilder
+from src.models import Chunk, LLMConnectionError
+
+from .prompts import RAGPromptBuilder
 
 logger = logging.getLogger(__name__)
 

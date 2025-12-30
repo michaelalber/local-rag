@@ -1,4 +1,4 @@
-"""Vector store infrastructure."""
+"""Vector storage."""
 
 from .chroma_store import ChromaVectorStore
 

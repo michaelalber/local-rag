@@ -3,7 +3,7 @@
 import re
 from pathlib import Path
 
-from src.domain.exceptions import FileSizeLimitError, UnsupportedFileTypeError
+from src.models import FileSizeLimitError, UnsupportedFileTypeError
 
 
 class FileValidator:

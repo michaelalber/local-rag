@@ -16,7 +16,7 @@ from src.api.dependencies import (
     get_vector_store,
 )
 from src.api.main import create_app
-from src.domain.entities import Book, Chunk, QueryResponse
+from src.models import Book, Chunk, QueryResponse
 
 
 @pytest.fixture

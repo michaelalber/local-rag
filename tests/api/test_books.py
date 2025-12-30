@@ -6,7 +6,7 @@ from uuid import uuid4
 
 from fastapi.testclient import TestClient
 
-from src.domain.exceptions import BookNotFoundError, UnsupportedFileTypeError
+from src.models import BookNotFoundError, UnsupportedFileTypeError
 
 
 class TestUploadBooks:

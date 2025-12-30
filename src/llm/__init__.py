@@ -1,4 +1,4 @@
-"""LLM infrastructure."""
+"""LLM client."""
 
 from .ollama_client import OllamaLLMClient
 from .prompts import RAGPromptBuilder

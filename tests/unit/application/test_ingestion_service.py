@@ -5,8 +5,8 @@ from pathlib import Path
 from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
-from src.application.services.ingestion_service import BookIngestionService
-from src.domain.entities import Book, Chunk
+from src.services import BookIngestionService
+from src.models import Book, Chunk
 
 
 class TestBookIngestionService:

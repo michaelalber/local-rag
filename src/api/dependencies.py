@@ -5,11 +5,11 @@ from typing import Annotated, Union
 
 from fastapi import Depends
 
-from src.application.services import BookIngestionService, QueryService, SessionManager
-from src.infrastructure.embeddings import OllamaEmbedder, SentenceTransformerEmbedder
-from src.infrastructure.llm import OllamaLLMClient
-from src.infrastructure.parsers import FileValidator, TextChunker, get_parser
-from src.infrastructure.vectorstore import ChromaVectorStore
+from src.embeddings import OllamaEmbedder, SentenceTransformerEmbedder
+from src.llm import OllamaLLMClient
+from src.parsers import FileValidator, TextChunker, get_parser
+from src.services import BookIngestionService, QueryService, SessionManager
+from src.vectorstore import ChromaVectorStore
 
 from .config import Settings, get_settings
 

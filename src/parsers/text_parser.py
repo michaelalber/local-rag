@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from src.domain.interfaces import DocumentParser
+from .base import DocumentParser
 
 
 class TextParser(DocumentParser):

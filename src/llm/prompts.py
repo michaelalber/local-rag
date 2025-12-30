@@ -1,6 +1,6 @@
 """RAG prompt construction for LLM queries."""
 
-from src.domain.entities import Chunk
+from src.models import Chunk
 
 
 class RAGPromptBuilder:

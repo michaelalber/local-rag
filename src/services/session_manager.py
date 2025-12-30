@@ -2,8 +2,7 @@
 
 from uuid import UUID
 
-from src.domain.entities import Book
-from src.domain.exceptions import BookNotFoundError, SessionLimitError
+from src.models import Book, BookNotFoundError, SessionLimitError
 
 
 class SessionManager:

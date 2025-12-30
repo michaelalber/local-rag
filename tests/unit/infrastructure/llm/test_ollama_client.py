@@ -4,8 +4,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from src.domain.exceptions import LLMConnectionError
-from src.infrastructure.llm.ollama_client import OllamaLLMClient
+from src.models import LLMConnectionError
+from src.llm import OllamaLLMClient
 
 
 class TestOllamaLLMClient:
@@ -14,7 +14,7 @@ class TestOllamaLLMClient:
     @pytest.fixture
     def mock_ollama_client(self):
         """Mock ollama.AsyncClient."""
-        with patch("src.infrastructure.llm.ollama_client.ollama.AsyncClient") as mock:
+        with patch("src.llm.ollama_client.ollama.AsyncClient") as mock:
             mock_instance = AsyncMock()
             mock.return_value = mock_instance
             yield mock_instance

@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.infrastructure.embeddings import SentenceTransformerEmbedder
+from src.embeddings import SentenceTransformerEmbedder
 
 
 class TestSentenceTransformerEmbedder:

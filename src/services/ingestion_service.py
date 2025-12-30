@@ -5,11 +5,9 @@ from pathlib import Path
 from typing import Callable
 from uuid import uuid4
 
-from src.domain.entities import Book, Chunk
-from src.domain.exceptions import DocumentParsingError
-from src.domain.interfaces import DocumentParser
-from src.infrastructure.parsers import FileValidator, TextChunker
-from src.infrastructure.vectorstore.chroma_store import ChromaVectorStore
+from src.models import Book, Chunk, DocumentParsingError
+from src.parsers import DocumentParser, FileValidator, TextChunker
+from src.vectorstore import ChromaVectorStore
 
 
 class BookIngestionService:

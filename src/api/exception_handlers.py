@@ -5,7 +5,7 @@ import logging
 from fastapi import Request
 from fastapi.responses import JSONResponse
 
-from src.domain.exceptions import (
+from src.models import (
     BookChatError,
     BookNotFoundError,
     DocumentParsingError,
