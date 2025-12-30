@@ -98,7 +98,7 @@ class TestOllamaIntegration:
         """Test that invalid Ollama URL is handled."""
         client = OllamaLLMClient(
             model="mistral:7b-instruct-q4_K_M",
-            base_url="http://invalid-host:99999",
+            base_url="http://invalid-host:59999",  # Use valid port range
         )
 
         # Health check should return False

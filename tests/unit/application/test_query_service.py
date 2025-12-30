@@ -12,7 +12,7 @@ class TestQueryService:
     @pytest.fixture
     def mock_vector_store(self):
         store = AsyncMock()
-        store.search.return_value = [
+        chunks = [
             Chunk(
                 id=uuid4(),
                 book_id=uuid4(),
@@ -26,6 +26,9 @@ class TestQueryService:
                 page_number=43,
             ),
         ]
+        store.search.return_value = chunks
+        # get_neighbor_chunks returns the chunks with neighbors (same chunks for simplicity)
+        store.get_neighbor_chunks.return_value = chunks
         return store
 
     @pytest.fixture
@@ -109,8 +112,10 @@ class TestQueryService:
         call_args = mock_llm.generate.call_args
         context = call_args.kwargs["context"]
 
+        # Context contains Chunk objects (for source attribution)
         assert len(context) == 2
-        assert "Relevant content" in context[0]
+        assert all(isinstance(c, Chunk) for c in context)
+        assert "Relevant content" in context[0].content
 
     @pytest.mark.asyncio
     async def test_query_includes_latency(self, service: QueryService):

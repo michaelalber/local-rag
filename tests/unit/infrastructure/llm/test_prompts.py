@@ -86,10 +86,11 @@ class TestRAGPromptBuilder:
         # Should include page numbers or chapter references
         assert "page" in prompt.lower() or "chapter" in prompt.lower()
 
-    def test_build_prompt_limits_context_chunks(
-        self, builder: RAGPromptBuilder, sample_chunks: list[Chunk]
-    ):
+    def test_build_prompt_limits_context_chunks(self, sample_chunks: list[Chunk]):
         """Test that very long context is handled appropriately."""
+        # Use a builder with stricter limit for this test
+        limited_builder = RAGPromptBuilder(max_context_length=20000)
+
         # Create many chunks
         book_id = uuid4()
         many_chunks = [
@@ -103,7 +104,7 @@ class TestRAGPromptBuilder:
         ]
 
         query = "What is this about?"
-        prompt = builder.build_prompt(query=query, context_chunks=many_chunks)
+        prompt = limited_builder.build_prompt(query=query, context_chunks=many_chunks)
 
         # Prompt should be constructed successfully
         assert query in prompt
