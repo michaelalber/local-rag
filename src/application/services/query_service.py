@@ -3,7 +3,8 @@
 import time
 
 from src.domain.entities import Chunk, QueryRequest, QueryResponse
-from src.domain.interfaces import EmbeddingService, LLMClient, VectorStore
+from src.infrastructure.vectorstore.chroma_store import ChromaVectorStore
+from src.infrastructure.llm.ollama_client import OllamaLLMClient
 
 
 class QueryService:
@@ -11,9 +12,9 @@ class QueryService:
 
     def __init__(
         self,
-        vector_store: VectorStore,
-        embedder: EmbeddingService,
-        llm_client: LLMClient,
+        vector_store: ChromaVectorStore,
+        embedder,  # OllamaEmbedder or SentenceTransformerEmbedder
+        llm_client: OllamaLLMClient,
         neighbor_window: int = 1,
     ):
         """

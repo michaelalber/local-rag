@@ -9,7 +9,7 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, File, Header, UploadFile, status
 
 from src.application.services import BookIngestionService, SessionManager
-from src.domain.interfaces import VectorStore
+from src.infrastructure.vectorstore import ChromaVectorStore
 
 from ..dependencies import get_ingestion_service, get_session_manager, get_vector_store
 from ..schemas import BookResponse
@@ -91,7 +91,7 @@ async def delete_book(
     book_id: UUID,
     session_id: Annotated[str, Header()],
     session_manager: Annotated[SessionManager, Depends(get_session_manager)],
-    vector_store: Annotated[VectorStore, Depends(get_vector_store)],
+    vector_store: Annotated[ChromaVectorStore, Depends(get_vector_store)],
 ) -> None:
     """Remove a book from the session and delete its chunks from the vector store."""
     session_manager.remove_book(session_id, book_id)
@@ -102,7 +102,7 @@ async def delete_book(
 async def clear_session(
     session_id: Annotated[str, Header()],
     session_manager: Annotated[SessionManager, Depends(get_session_manager)],
-    vector_store: Annotated[VectorStore, Depends(get_vector_store)],
+    vector_store: Annotated[ChromaVectorStore, Depends(get_vector_store)],
 ) -> None:
     """Clear all books from the session."""
     session_manager.clear_session(session_id)

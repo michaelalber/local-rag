@@ -2,10 +2,8 @@
 
 from sentence_transformers import SentenceTransformer
 
-from src.domain.interfaces import EmbeddingService
 
-
-class SentenceTransformerEmbedder(EmbeddingService):
+class SentenceTransformerEmbedder:
     """Embedding service using sentence-transformers."""
 
     def __init__(self, model_name: str = "all-MiniLM-L6-v2"):

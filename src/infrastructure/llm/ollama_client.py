@@ -6,13 +6,12 @@ import ollama
 
 from src.domain.entities import Chunk
 from src.domain.exceptions import LLMConnectionError
-from src.domain.interfaces import LLMClient
 from src.infrastructure.llm.prompts import RAGPromptBuilder
 
 logger = logging.getLogger(__name__)
 
 
-class OllamaLLMClient(LLMClient):
+class OllamaLLMClient:
     """LLM client using Ollama for local inference."""
 
     def __init__(

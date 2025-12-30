@@ -1,13 +1,17 @@
 """FastAPI dependency injection."""
 
 from functools import lru_cache
-from typing import Annotated
+from typing import Annotated, Union
 
 from fastapi import Depends
 
 from src.application.services import BookIngestionService, QueryService, SessionManager
-from src.domain.interfaces import EmbeddingService, LLMClient, VectorStore
 from src.infrastructure.embeddings import OllamaEmbedder, SentenceTransformerEmbedder
+from src.infrastructure.llm import OllamaLLMClient
+from src.infrastructure.parsers import FileValidator, TextChunker, get_parser
+from src.infrastructure.vectorstore import ChromaVectorStore
+
+from .config import Settings, get_settings
 
 # Known Ollama embedding models
 OLLAMA_EMBEDDING_MODELS = {
@@ -18,15 +22,13 @@ OLLAMA_EMBEDDING_MODELS = {
     "all-minilm",
     "all-minilm:latest",
 }
-from src.infrastructure.llm import OllamaLLMClient
-from src.infrastructure.parsers import FileValidator, TextChunker, get_parser
-from src.infrastructure.vectorstore import ChromaVectorStore
 
-from .config import Settings, get_settings
+# Type alias for embedders
+Embedder = Union[OllamaEmbedder, SentenceTransformerEmbedder]
 
 
 @lru_cache
-def _get_embedder(settings: Settings) -> EmbeddingService:
+def _get_embedder(settings: Settings) -> Embedder:
     """Get cached embedder instance, auto-detecting backend."""
     model = settings.embedding_model
 
@@ -43,25 +45,25 @@ def _get_embedder(settings: Settings) -> EmbeddingService:
 
 def get_embedder(
     settings: Annotated[Settings, Depends(get_settings)]
-) -> EmbeddingService:
+) -> Embedder:
     """Get embedder with injected settings."""
     return _get_embedder(settings)
 
 
 @lru_cache
-def _get_vector_store(settings: Settings) -> VectorStore:
+def _get_vector_store(settings: Settings) -> ChromaVectorStore:
     """Get cached vector store instance."""
     settings.chroma_persist_dir.mkdir(parents=True, exist_ok=True)
     return ChromaVectorStore(persist_dir=settings.chroma_persist_dir)
 
 
-def get_vector_store(settings: Annotated[Settings, Depends(get_settings)]) -> VectorStore:
+def get_vector_store(settings: Annotated[Settings, Depends(get_settings)]) -> ChromaVectorStore:
     """Get vector store with injected settings."""
     return _get_vector_store(settings)
 
 
 @lru_cache
-def _get_llm_client(settings: Settings) -> LLMClient:
+def _get_llm_client(settings: Settings) -> OllamaLLMClient:
     """Get cached LLM client instance."""
     return OllamaLLMClient(
         model=settings.llm_model,
@@ -69,7 +71,7 @@ def _get_llm_client(settings: Settings) -> LLMClient:
     )
 
 
-def get_llm_client(settings: Annotated[Settings, Depends(get_settings)]) -> LLMClient:
+def get_llm_client(settings: Annotated[Settings, Depends(get_settings)]) -> OllamaLLMClient:
     """Get LLM client with injected settings."""
     return _get_llm_client(settings)
 
@@ -89,8 +91,8 @@ def get_session_manager(
 
 def get_ingestion_service(
     settings: Annotated[Settings, Depends(get_settings)],
-    embedder: Annotated[EmbeddingService, Depends(get_embedder)],
-    vector_store: Annotated[VectorStore, Depends(get_vector_store)],
+    embedder: Annotated[Embedder, Depends(get_embedder)],
+    vector_store: Annotated[ChromaVectorStore, Depends(get_vector_store)],
 ) -> BookIngestionService:
     """Get ingestion service with dependencies."""
     return BookIngestionService(
@@ -107,9 +109,9 @@ def get_ingestion_service(
 
 def get_query_service(
     settings: Annotated[Settings, Depends(get_settings)],
-    vector_store: Annotated[VectorStore, Depends(get_vector_store)],
-    embedder: Annotated[EmbeddingService, Depends(get_embedder)],
-    llm_client: Annotated[LLMClient, Depends(get_llm_client)],
+    vector_store: Annotated[ChromaVectorStore, Depends(get_vector_store)],
+    embedder: Annotated[Embedder, Depends(get_embedder)],
+    llm_client: Annotated[OllamaLLMClient, Depends(get_llm_client)],
 ) -> QueryService:
     """Get query service with dependencies."""
     return QueryService(

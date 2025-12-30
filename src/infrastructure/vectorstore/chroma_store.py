@@ -8,12 +8,11 @@ import chromadb
 from chromadb.config import Settings
 
 from src.domain.entities import Chunk
-from src.domain.interfaces import VectorStore
 
 logger = logging.getLogger(__name__)
 
 
-class ChromaVectorStore(VectorStore):
+class ChromaVectorStore:
     """Vector store using ChromaDB with persistence."""
 
     def __init__(self, persist_dir: Path):

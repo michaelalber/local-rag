@@ -7,8 +7,9 @@ from uuid import uuid4
 
 from src.domain.entities import Book, Chunk
 from src.domain.exceptions import DocumentParsingError
-from src.domain.interfaces import DocumentParser, EmbeddingService, VectorStore
+from src.domain.interfaces import DocumentParser
 from src.infrastructure.parsers import FileValidator, TextChunker
+from src.infrastructure.vectorstore.chroma_store import ChromaVectorStore
 
 
 class BookIngestionService:
@@ -18,8 +19,8 @@ class BookIngestionService:
         self,
         parser_factory: Callable[[Path], DocumentParser],
         chunker: TextChunker,
-        embedder: EmbeddingService,
-        vector_store: VectorStore,
+        embedder,  # OllamaEmbedder or SentenceTransformerEmbedder
+        vector_store: ChromaVectorStore,
         validator: FileValidator,
     ):
         """

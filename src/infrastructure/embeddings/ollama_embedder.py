@@ -2,8 +2,6 @@
 
 import httpx
 
-from src.domain.interfaces import EmbeddingService
-
 # Known dimensions for common Ollama embedding models
 OLLAMA_EMBED_DIMENSIONS = {
     "nomic-embed-text": 768,
@@ -15,7 +13,7 @@ OLLAMA_EMBED_DIMENSIONS = {
 }
 
 
-class OllamaEmbedder(EmbeddingService):
+class OllamaEmbedder:
     """Embedding service using Ollama API."""
 
     def __init__(
