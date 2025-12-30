@@ -45,7 +45,7 @@ cd frontend && npm run dev
 
 # Ollama
 ollama serve
-ollama pull llama3.1:8b           # LLM
+ollama pull deepseek-r1:14b       # LLM (recommended)
 ollama pull mxbai-embed-large     # Embeddings
 
 # Lint
@@ -104,8 +104,8 @@ All implementations must follow these security principles:
 ## Models
 
 - **Embeddings:** `mxbai-embed-large` (1024 dim, Ollama-based)
-- **LLM:** `llama3.1:8b` (best for RAG)
-- **Alternatives:** `mistral:7b-instruct` (faster), `nomic-embed-text` (smaller embeddings)
+- **LLM:** `deepseek-r1:14b` (recommended for RAG)
+- **Alternatives:** `llama3.1:8b`, `mistral:7b-instruct` (faster), `nomic-embed-text` (smaller embeddings)
 
 ## Phase Execution
 

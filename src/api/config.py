@@ -22,7 +22,7 @@ class Settings(BaseSettings):
 
     # Models
     embedding_model: str = "all-MiniLM-L6-v2"
-    llm_model: str = "mistral:7b-instruct-q4_K_M"
+    llm_model: str = "deepseek-r1:14b"
     ollama_base_url: str = "http://localhost:11434"
 
     # RAG

@@ -105,7 +105,7 @@ ollama serve
 **Recommended Setup:**
 ```bash
 # LLM Model - Best for RAG chat
-ollama pull llama3.1:8b
+ollama pull deepseek-r1:14b
 
 # Embedding Model - High quality semantic search
 ollama pull mxbai-embed-large
@@ -113,7 +113,8 @@ ollama pull mxbai-embed-large
 
 **Alternative Models:**
 ```bash
-# Faster, smaller LLM
+# Good alternatives
+ollama pull llama3.1:8b
 ollama pull mistral:7b-instruct
 
 # For code-heavy technical books
@@ -232,20 +233,18 @@ For the best RAG experience, we recommend:
 
 | Component | Model | Size | Why |
 |-----------|-------|------|-----|
-| **LLM** | `llama3.1:8b` | 4.9GB | Best balance of quality and speed for RAG |
+| **LLM** | `deepseek-r1:14b` | 9GB | Excellent reasoning and context understanding |
 | **Embeddings** | `mxbai-embed-large` | 669MB | High-quality 1024-dim embeddings |
 
 ### LLM Models for RAG
 
 | Model | Size | Best For | Notes |
 |-------|------|----------|-------|
-| **llama3.1:8b** | 4.9GB | General RAG (recommended) | Great instruction following, good with context |
-| **mistral:7b-instruct** | 4.4GB | Fast responses | Good quality, slightly faster than llama3.1 |
+| **deepseek-r1:14b** | 9GB | General RAG (recommended) | Excellent reasoning, great with technical content |
+| **llama3.1:8b** | 4.9GB | Balanced option | Great instruction following, good with context |
+| **mistral:7b-instruct** | 4.4GB | Fast responses | Good quality, faster inference |
 | **codellama:7b** | 3.8GB | Technical/code books | Specialized for programming content |
 | **gemma3:12b** | 8.1GB | Higher quality | Better answers, slower, needs more VRAM |
-| **llama3.3:70b** | 42GB | Best quality | Requires significant resources (CPU-bound without large GPU) |
-
-**Note:** `llama3-chatqa:8b` is specifically trained for QA but requires a special prompt format. Use `llama3.1:8b` for standard RAG.
 
 ### Embedding Models
 
@@ -264,7 +263,7 @@ For the best RAG experience, we recommend:
 ollama list
 
 # Pull a model
-ollama pull llama3.1:8b
+ollama pull deepseek-r1:14b
 
 # Remove a model
 ollama rm <model-name>
@@ -293,7 +292,7 @@ CHUNK_OVERLAP=50
 
 # Models (recommended settings)
 EMBEDDING_MODEL=mxbai-embed-large
-LLM_MODEL=llama3.1:8b
+LLM_MODEL=deepseek-r1:14b
 OLLAMA_BASE_URL=http://localhost:11434
 
 # RAG Settings
@@ -317,9 +316,9 @@ NEIGHBOR_WINDOW=1
 
 - **GPU Acceleration**: Ollama will use GPU if available (significantly faster)
 - **Model Selection**:
-  - `llama3.1:8b`: Best balance for RAG
-  - `mistral:7b-instruct`: Slightly faster
-  - `gemma3:12b`: Better quality, needs more resources
+  - `deepseek-r1:14b`: Recommended for RAG, excellent reasoning
+  - `llama3.1:8b`: Good balance of speed and quality
+  - `mistral:7b-instruct`: Fastest inference
 - **Retrieval Percentage**:
   - **1-2%**: Fast, focused answers for specific questions
   - **5%**: Good for topic summaries
