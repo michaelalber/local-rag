@@ -10,14 +10,15 @@ class FileValidator:
     """Validates uploaded files for security and compatibility."""
 
     ALLOWED_EXTENSIONS = {".pdf", ".epub", ".md", ".txt", ".rst", ".html", ".htm"}
-    ALLOWED_MIME_TYPES = {
-        "application/pdf",
-        "application/epub+zip",
-        "text/markdown",
-        "text/plain",
-        "text/x-rst",
-        "text/html",
+
+    # Magic bytes for binary file detection
+    MAGIC_BYTES = {
+        ".pdf": b"%PDF",
+        ".epub": b"PK",  # EPUB is a ZIP file
     }
+
+    # Text file extensions (validated by encoding, not magic bytes)
+    TEXT_EXTENSIONS = {".md", ".txt", ".rst", ".html", ".htm"}
 
     def __init__(self, max_size_mb: int = 50):
         self.max_size_bytes = max_size_mb * 1024 * 1024
@@ -85,6 +86,36 @@ class FileValidator:
 
         return f"{safe_stem}{ext.lower()}"
 
+    def validate_mime_type(self, file_path: Path) -> None:
+        """
+        Validate file content matches expected type using magic bytes.
+
+        Raises:
+            UnsupportedFileTypeError: If file content doesn't match extension.
+        """
+        ext = file_path.suffix.lower()
+
+        # Text files: verify they're valid UTF-8
+        if ext in self.TEXT_EXTENSIONS:
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    f.read(1024)  # Read first 1KB to check encoding
+            except UnicodeDecodeError:
+                raise UnsupportedFileTypeError(
+                    f"File {file_path.name} is not valid UTF-8 text"
+                )
+            return
+
+        # Binary files: check magic bytes
+        expected_magic = self.MAGIC_BYTES.get(ext)
+        if expected_magic:
+            with open(file_path, "rb") as f:
+                header = f.read(len(expected_magic))
+            if not header.startswith(expected_magic):
+                raise UnsupportedFileTypeError(
+                    f"File {file_path.name} content doesn't match {ext} format"
+                )
+
     def validate_file(self, file_path: Path, size_bytes: int) -> str:
         """
         Full validation pipeline.
@@ -98,4 +129,5 @@ class FileValidator:
         """
         self.validate_extension(file_path)
         self.validate_size(size_bytes)
+        self.validate_mime_type(file_path)
         return self.sanitize_filename(file_path.name)
