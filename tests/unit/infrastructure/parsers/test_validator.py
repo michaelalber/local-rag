@@ -54,3 +54,48 @@ class TestFileValidator:
     def test_sanitize_filename_handles_spaces(self, validator: FileValidator):
         result = validator.sanitize_filename("my book name.epub")
         assert " " not in result or result.replace(" ", "_")  # Either removed or replaced
+
+    # MIME type validation tests
+    def test_mime_validates_pdf_magic_bytes(self, validator: FileValidator, tmp_path: Path):
+        pdf_file = tmp_path / "test.pdf"
+        pdf_file.write_bytes(b"%PDF-1.4 fake pdf content")
+
+        # Should not raise
+        validator.validate_mime_type(pdf_file)
+
+    def test_mime_rejects_fake_pdf(self, validator: FileValidator, tmp_path: Path):
+        fake_pdf = tmp_path / "fake.pdf"
+        fake_pdf.write_bytes(b"This is not a PDF file")
+
+        with pytest.raises(UnsupportedFileTypeError):
+            validator.validate_mime_type(fake_pdf)
+
+    def test_mime_validates_epub_zip_signature(self, validator: FileValidator, tmp_path: Path):
+        epub_file = tmp_path / "test.epub"
+        # EPUB files start with PK (ZIP format)
+        epub_file.write_bytes(b"PK\x03\x04fake epub content")
+
+        # Should not raise
+        validator.validate_mime_type(epub_file)
+
+    def test_mime_rejects_fake_epub(self, validator: FileValidator, tmp_path: Path):
+        fake_epub = tmp_path / "fake.epub"
+        fake_epub.write_bytes(b"Not a ZIP file")
+
+        with pytest.raises(UnsupportedFileTypeError):
+            validator.validate_mime_type(fake_epub)
+
+    def test_mime_validates_utf8_text_file(self, validator: FileValidator, tmp_path: Path):
+        txt_file = tmp_path / "test.txt"
+        txt_file.write_text("Valid UTF-8 content", encoding="utf-8")
+
+        # Should not raise
+        validator.validate_mime_type(txt_file)
+
+    def test_mime_rejects_invalid_utf8_text(self, validator: FileValidator, tmp_path: Path):
+        txt_file = tmp_path / "test.txt"
+        # Write invalid UTF-8 bytes
+        txt_file.write_bytes(b"\xff\xfe Invalid UTF-8")
+
+        with pytest.raises(UnsupportedFileTypeError):
+            validator.validate_mime_type(txt_file)
