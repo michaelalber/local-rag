@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, watch, onMounted } from 'vue';
 import { TransitionGroup, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue';
-import { PaperAirplaneIcon, CpuChipIcon, XMarkIcon, ShieldCheckIcon, BookOpenIcon, SparklesIcon, AcademicCapIcon } from '@heroicons/vue/24/solid';
+import { PaperAirplaneIcon, CpuChipIcon, XMarkIcon, ShieldCheckIcon, BookOpenIcon, SparklesIcon, AcademicCapIcon, GlobeAltIcon } from '@heroicons/vue/24/solid';
 import type { Message, QuerySource, Source, MCPSource } from '../types';
 import ChatMessage from './ChatMessage.vue';
 import ConfirmDialog from './ConfirmDialog.vue';
@@ -23,6 +23,7 @@ interface OllamaModel {
 const sourceIcons: Record<string, any> = {
   compliance: ShieldCheckIcon,
   mslearn: AcademicCapIcon,
+  export_control: GlobeAltIcon,
 };
 
 const props = defineProps<Props>();
@@ -65,12 +66,9 @@ const canSendMessage = computed(() => {
   if (selectedSource.value === 'books') {
     return props.hasBooks;
   }
-  // For specific MCP source, check if available
-  if (selectedSource.value === 'compliance') {
-    return isMcpSourceAvailable('compliance');
-  }
-  if (selectedSource.value === 'mslearn') {
-    return isMcpSourceAvailable('mslearn');
+  // For specific MCP sources, check if available
+  if (selectedSource.value === 'compliance' || selectedSource.value === 'mslearn' || selectedSource.value === 'export_control') {
+    return isMcpSourceAvailable(selectedSource.value);
   }
   // For 'all' or 'both', require at least one source
   return props.hasBooks || anyMcpAvailable.value;

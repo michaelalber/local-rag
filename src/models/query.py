@@ -12,6 +12,7 @@ class QuerySource(str, Enum):
     BOOKS = "books"
     COMPLIANCE = "compliance"
     MSLEARN = "mslearn"
+    EXPORT_CONTROL = "export_control"
     ALL = "all"  # Query all available MCP sources + books
 
     # Legacy alias for backward compatibility

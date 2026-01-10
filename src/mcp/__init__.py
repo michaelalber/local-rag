@@ -1,6 +1,6 @@
 """MCP client integration for external knowledge sources."""
 
-from .adapters import AegisAdapter, MCPAdapter, MSLearnAdapter
+from .adapters import AegisAdapter, ExportControlAdapter, MCPAdapter, MSLearnAdapter
 
 # Backward compatibility - AegisMCPClient is now replaced by AegisAdapter + BaseMCPClient
 # but keep the old import working during transition
@@ -15,6 +15,7 @@ __all__ = [
     "MCPManager",
     "MCPAdapter",
     "AegisAdapter",
+    "ExportControlAdapter",
     "MSLearnAdapter",
     # Models
     "ComplianceSearchResult",

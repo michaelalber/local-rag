@@ -14,7 +14,14 @@ from fastapi import Depends
 
 from src.embeddings import OllamaEmbedder, SentenceTransformerEmbedder
 from src.llm import OllamaLLMClient
-from src.mcp import AegisAdapter, AegisMCPClient, BaseMCPClient, MCPManager, MSLearnAdapter
+from src.mcp import (
+    AegisAdapter,
+    AegisMCPClient,
+    BaseMCPClient,
+    ExportControlAdapter,
+    MCPManager,
+    MSLearnAdapter,
+)
 from src.parsers import FileValidator, TextChunker, get_parser
 from src.services import BookIngestionService, QueryService, SessionManager
 from src.vectorstore import ChromaVectorStore
@@ -118,6 +125,27 @@ def _create_mcp_manager() -> MCPManager:
             http_timeout=settings.mslearn_mcp_timeout,
         )
         manager.register(MSLearnAdapter(client))
+
+    # Register Export Control adapter if configured
+    if settings.export_control_mcp_transport:
+        if settings.export_control_mcp_transport == MCPTransport.STDIO:
+            client = BaseMCPClient(
+                transport="stdio",
+                command=settings.export_control_mcp_command,
+                args=(
+                    settings.export_control_mcp_args.split()
+                    if settings.export_control_mcp_args
+                    else []
+                ),
+                working_dir=settings.export_control_mcp_working_dir,
+            )
+        else:  # HTTP
+            client = BaseMCPClient(
+                transport="http",
+                http_url=settings.export_control_mcp_url,
+                http_timeout=settings.export_control_mcp_timeout,
+            )
+        manager.register(ExportControlAdapter(client))
 
     return manager
 

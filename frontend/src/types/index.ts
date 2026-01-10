@@ -31,7 +31,7 @@ export interface Message {
 }
 
 // Query source options
-export type QuerySource = 'books' | 'compliance' | 'mslearn' | 'all' | 'both';
+export type QuerySource = 'books' | 'compliance' | 'mslearn' | 'export_control' | 'all' | 'both';
 
 // MCP source status from health check
 export interface MCPSource {

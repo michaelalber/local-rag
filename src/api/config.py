@@ -57,6 +57,18 @@ class Settings(BaseSettings):
     mslearn_mcp_url: str = "https://learn.microsoft.com/api/mcp"
     mslearn_mcp_timeout: int = 30
 
+    # Export Control MCP Integration (optional)
+    export_control_mcp_transport: MCPTransport | None = None  # "stdio" or "http", None to disable
+
+    # Export Control HTTP transport settings
+    export_control_mcp_url: str = "http://localhost:8766/mcp"
+    export_control_mcp_timeout: int = 30
+
+    # Export Control stdio transport settings
+    export_control_mcp_command: str = "uv"
+    export_control_mcp_args: str = "run python -m export_control_mcp.server"
+    export_control_mcp_working_dir: str | None = None
+
     model_config = ConfigDict(env_file=".env", extra="ignore", frozen=True)
 
 
