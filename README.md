@@ -5,7 +5,7 @@
 
 A privacy-focused, local-first RAG (Retrieval-Augmented Generation) application for chatting with your documents and external knowledge sources using a local LLM. Upload PDFs, eBooks, Markdown, or text files and ask questions - all processing happens on your machine.
 
-Connect to external knowledge via [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) servers like Microsoft Learn or security compliance frameworks (NIST, OWASP, DOE).
+Connect to external knowledge via [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) servers like Microsoft Learn, security compliance frameworks, or export control regulations.
 
 ## Features
 
@@ -14,6 +14,7 @@ Connect to external knowledge via [Model Context Protocol (MCP)](https://modelco
 - 🔌 **MCP Integration**: Connect to external knowledge sources via [Model Context Protocol](https://modelcontextprotocol.io/)
   - **Aegis MCP**: Security compliance frameworks (NIST 800-53, OWASP, DOE)
   - **Microsoft Learn MCP**: Microsoft documentation and training content
+  - **Export Control MCP**: EAR, ITAR, sanctions screening, classification assistance
 - 🔒 **Privacy First**: All data stays local - no cloud services or external APIs (MCP sources optional)
 - 💬 **Interactive Chat**: Ask questions and get answers with source citations
 - 🎯 **Source Attribution**: See exactly which book passages informed each answer
@@ -337,6 +338,12 @@ AEGIS_MCP_URL=http://localhost:8765/mcp
 # Microsoft Learn MCP
 MSLEARN_MCP_ENABLED=true
 MSLEARN_MCP_URL=https://learn.microsoft.com/api/mcp
+
+# Export Control MCP - EAR, ITAR, sanctions screening
+EXPORT_CONTROL_MCP_TRANSPORT=stdio    # 'http' or 'stdio'
+EXPORT_CONTROL_MCP_COMMAND=uv
+EXPORT_CONTROL_MCP_ARGS=run python -m export_control_mcp.server
+EXPORT_CONTROL_MCP_WORKING_DIR=/path/to/export-assist-mcp
 ```
 
 ## Enhanced Parsing with Docling
@@ -430,9 +437,27 @@ export AEGIS_MCP_TRANSPORT=stdio
 export AEGIS_MCP_COMMAND=aegis-mcp
 ```
 
+### Enabling Export Control MCP
+
+Export Control MCP provides access to export compliance regulations (EAR, ITAR), sanctions screening (OFAC, BIS), and classification assistance. See [export-assist-mcp](https://github.com/michaelalber/export-assist-mcp) for setup.
+
+```bash
+# Clone and setup export-assist-mcp
+git clone https://github.com/michaelalber/export-assist-mcp
+cd export-assist-mcp
+
+# Configure KnowledgeHub to use it
+export EXPORT_CONTROL_MCP_TRANSPORT=stdio
+export EXPORT_CONTROL_MCP_COMMAND=uv
+export EXPORT_CONTROL_MCP_ARGS="run python -m export_control_mcp.server"
+export EXPORT_CONTROL_MCP_WORKING_DIR=/path/to/export-assist-mcp
+```
+
+The frontend will automatically show "Export Control" as a source option when configured.
+
 ### How It Works
 
-1. **Source Selection**: Choose your knowledge source in the chat interface (Books, Compliance, MS Learn, or All)
+1. **Source Selection**: Choose your knowledge source in the chat interface (Books, Compliance, MS Learn, Export Control, or All)
 2. **Health Check**: The `/api/health` endpoint reports which MCP sources are available
 3. **Combined Queries**: Select "All" to search books and all configured MCP sources together
 4. **Streaming**: All sources support real-time streaming responses
@@ -440,25 +465,25 @@ export AEGIS_MCP_COMMAND=aegis-mcp
 ### Architecture
 
 ```
-┌─────────────────────────────────────────┐
-│              QueryService               │
-│  Routes queries based on source         │
-└─────────────────┬───────────────────────┘
-                  │
-┌─────────────────▼───────────────────────┐
-│              MCPManager                 │
-│  Registers and routes to adapters       │
-└────────┬─────────────────┬──────────────┘
-         │                 │
-┌────────▼────────┐ ┌──────▼───────┐
-│  AegisAdapter   │ │MSLearnAdapter│
-│  (compliance)   │ │  (mslearn)   │
-└────────┬────────┘ └──────┬───────┘
-         │                 │
-┌────────▼─────────────────▼──────────────┐
-│            BaseMCPClient                │
-│  Handles stdio/HTTP transport           │
-└─────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────┐
+│                    QueryService                      │
+│            Routes queries based on source            │
+└─────────────────────────┬────────────────────────────┘
+                          │
+┌─────────────────────────▼────────────────────────────┐
+│                    MCPManager                        │
+│           Registers and routes to adapters           │
+└────────┬──────────────────┬──────────────────┬───────┘
+         │                  │                  │
+┌────────▼────────┐ ┌───────▼───────┐ ┌────────▼────────┐
+│  AegisAdapter   │ │MSLearnAdapter │ │ExportCtlAdapter │
+│  (compliance)   │ │   (mslearn)   │ │ (export_control)│
+└────────┬────────┘ └───────┬───────┘ └────────┬────────┘
+         │                  │                  │
+┌────────▼──────────────────▼──────────────────▼───────┐
+│                   BaseMCPClient                      │
+│             Handles stdio/HTTP transport             │
+└──────────────────────────────────────────────────────┘
 ```
 
 ## Security Considerations
