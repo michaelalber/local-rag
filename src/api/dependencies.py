@@ -14,7 +14,7 @@ from fastapi import Depends
 
 from src.embeddings import OllamaEmbedder, SentenceTransformerEmbedder
 from src.llm import OllamaLLMClient
-from src.mcp import AegisMCPClient
+from src.mcp import AegisMCPClient, BaseMCPClient, MCPManager, AegisAdapter, MSLearnAdapter
 from src.parsers import FileValidator, TextChunker, get_parser
 from src.services import BookIngestionService, QueryService, SessionManager
 from src.vectorstore import ChromaVectorStore
@@ -82,36 +82,85 @@ def get_session_manager_singleton() -> SessionManager:
     return SessionManager(max_books=settings.max_books_per_session)
 
 
-# --- Aegis MCP Client (lazy async initialization) ---
+# --- MCP Manager (lazy async initialization) ---
+
+_mcp_manager: MCPManager | None = None
+_mcp_manager_initialized: bool = False
+
+
+def _create_mcp_manager() -> MCPManager:
+    """Create MCP manager with configured adapters (not connected yet)."""
+    settings = get_settings()
+    manager = MCPManager()
+
+    # Register Aegis adapter if configured
+    if settings.aegis_mcp_transport:
+        if settings.aegis_mcp_transport == MCPTransport.STDIO:
+            client = BaseMCPClient(
+                transport="stdio",
+                command=settings.aegis_mcp_command,
+                args=settings.aegis_mcp_args.split() if settings.aegis_mcp_args else [],
+                working_dir=settings.aegis_mcp_working_dir,
+            )
+        else:  # HTTP
+            client = BaseMCPClient(
+                transport="http",
+                http_url=settings.aegis_mcp_url,
+                http_timeout=settings.aegis_mcp_timeout,
+            )
+        manager.register(AegisAdapter(client))
+
+    # Register MS Learn adapter if enabled
+    if settings.mslearn_mcp_enabled:
+        client = BaseMCPClient(
+            transport="http",
+            http_url=settings.mslearn_mcp_url,
+            http_timeout=settings.mslearn_mcp_timeout,
+        )
+        manager.register(MSLearnAdapter(client))
+
+    return manager
+
+
+async def get_mcp_manager() -> MCPManager:
+    """Get MCP manager (lazily initialized on first request)."""
+    global _mcp_manager, _mcp_manager_initialized
+
+    if _mcp_manager_initialized:
+        return _mcp_manager
+
+    _mcp_manager = _create_mcp_manager()
+    _mcp_manager_initialized = True
+
+    if _mcp_manager:
+        await _mcp_manager.connect_all()
+
+    return _mcp_manager
+
+
+async def shutdown_mcp_manager() -> None:
+    """Disconnect all MCP clients on shutdown."""
+    global _mcp_manager, _mcp_manager_initialized
+
+    if _mcp_manager:
+        try:
+            await _mcp_manager.disconnect_all()
+            logger.info("MCP manager disconnected all clients")
+        except Exception as e:
+            logger.warning("Error disconnecting MCP manager: %s", e)
+
+    _mcp_manager = None
+    _mcp_manager_initialized = False
+
+
+# --- Legacy Aegis client (deprecated, use get_mcp_manager instead) ---
 
 _aegis_client: AegisMCPClient | None = None
 _aegis_client_initialized: bool = False
 
 
-def _create_aegis_client() -> AegisMCPClient | None:
-    """Create Aegis MCP client based on configuration (not connected yet)."""
-    settings = get_settings()
-
-    if not settings.aegis_mcp_transport:
-        return None
-
-    if settings.aegis_mcp_transport == MCPTransport.STDIO:
-        return AegisMCPClient(
-            transport="stdio",
-            command=settings.aegis_mcp_command,
-            args=settings.aegis_mcp_args.split() if settings.aegis_mcp_args else [],
-            working_dir=settings.aegis_mcp_working_dir,
-        )
-    else:  # HTTP
-        return AegisMCPClient(
-            transport="http",
-            http_url=settings.aegis_mcp_url,
-            http_timeout=settings.aegis_mcp_timeout,
-        )
-
-
 async def get_aegis_client() -> AegisMCPClient | None:
-    """Get Aegis MCP client (lazily initialized on first request).
+    """Get Aegis MCP client (deprecated: use get_mcp_manager instead).
 
     Returns None if Aegis is not configured.
     """
@@ -120,7 +169,25 @@ async def get_aegis_client() -> AegisMCPClient | None:
     if _aegis_client_initialized:
         return _aegis_client
 
-    _aegis_client = _create_aegis_client()
+    settings = get_settings()
+    if not settings.aegis_mcp_transport:
+        _aegis_client_initialized = True
+        return None
+
+    if settings.aegis_mcp_transport == MCPTransport.STDIO:
+        _aegis_client = AegisMCPClient(
+            transport="stdio",
+            command=settings.aegis_mcp_command,
+            args=settings.aegis_mcp_args.split() if settings.aegis_mcp_args else [],
+            working_dir=settings.aegis_mcp_working_dir,
+        )
+    else:  # HTTP
+        _aegis_client = AegisMCPClient(
+            transport="http",
+            http_url=settings.aegis_mcp_url,
+            http_timeout=settings.aegis_mcp_timeout,
+        )
+
     _aegis_client_initialized = True
 
     if _aegis_client:
@@ -135,7 +202,7 @@ async def get_aegis_client() -> AegisMCPClient | None:
 
 
 async def shutdown_aegis_client() -> None:
-    """Disconnect Aegis MCP client on shutdown."""
+    """Disconnect Aegis MCP client on shutdown (deprecated)."""
     global _aegis_client, _aegis_client_initialized
 
     if _aegis_client:
@@ -194,7 +261,7 @@ async def get_query_service(
     vector_store: Annotated[ChromaVectorStore, Depends(get_vector_store)],
     embedder: Annotated[Embedder, Depends(get_embedder)],
     llm_client: Annotated[OllamaLLMClient, Depends(get_llm_client)],
-    aegis_client: Annotated[AegisMCPClient | None, Depends(get_aegis_client)],
+    mcp_manager: Annotated[MCPManager, Depends(get_mcp_manager)],
 ) -> QueryService:
     """FastAPI dependency for query service."""
     settings = get_settings()
@@ -203,5 +270,5 @@ async def get_query_service(
         embedder=embedder,
         llm_client=llm_client,
         neighbor_window=settings.neighbor_window,
-        aegis_client=aegis_client,
+        mcp_manager=mcp_manager,
     )

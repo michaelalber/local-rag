@@ -11,7 +11,11 @@ class QuerySource(str, Enum):
 
     BOOKS = "books"
     COMPLIANCE = "compliance"
-    BOTH = "both"
+    MSLEARN = "mslearn"
+    ALL = "all"  # Query all available MCP sources + books
+
+    # Legacy alias for backward compatibility
+    BOTH = "both"  # Deprecated: use ALL instead
 
 
 @dataclass

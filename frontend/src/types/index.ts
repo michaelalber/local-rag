@@ -30,15 +30,21 @@ export interface Message {
   isStreaming?: boolean;
 }
 
-// Query source options for selecting between Books, Compliance, or Both
-export type QuerySource = 'books' | 'compliance' | 'both';
+// Query source options
+export type QuerySource = 'books' | 'compliance' | 'mslearn' | 'all' | 'both';
+
+// MCP source status from health check
+export interface MCPSource {
+  name: string;
+  display_name: string;
+  available: boolean;
+}
 
 // Health check response
 export interface HealthResponse {
   status: string;
   version: string;
-  aegis_available: boolean;
-  aegis_transport: 'stdio' | 'http' | null;
+  mcp_sources: MCPSource[];
 }
 
 // SSE event types for streaming

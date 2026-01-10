@@ -4,29 +4,23 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from src.mcp import AegisMCPClient
+from src.mcp import MCPManager
 
-from ..config import get_settings
-from ..dependencies import get_aegis_client
+from ..dependencies import get_mcp_manager
 
 router = APIRouter(tags=["health"])
 
 
 @router.get("/health")
 async def health_check(
-    aegis_client: Annotated[AegisMCPClient | None, Depends(get_aegis_client)],
+    mcp_manager: Annotated[MCPManager, Depends(get_mcp_manager)],
 ) -> dict:
-    """Check API health including Aegis MCP status."""
-    settings = get_settings()
-
-    # Check Aegis availability
-    aegis_available = False
-    if aegis_client:
-        aegis_available = await aegis_client.health_check()
+    """Check API health including all MCP source statuses."""
+    # Get status of all registered MCP sources
+    mcp_sources = await mcp_manager.get_sources_status()
 
     return {
         "status": "ok",
         "version": "0.1.0",
-        "aegis_available": aegis_available,
-        "aegis_transport": settings.aegis_mcp_transport.value if settings.aegis_mcp_transport else None,
+        "mcp_sources": mcp_sources,
     }

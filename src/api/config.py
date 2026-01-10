@@ -43,14 +43,19 @@ class Settings(BaseSettings):
     # Aegis MCP Integration (optional)
     aegis_mcp_transport: MCPTransport | None = None  # "stdio" or "http", None to disable
 
-    # HTTP transport settings
+    # Aegis HTTP transport settings
     aegis_mcp_url: str = "http://localhost:8765/mcp"
     aegis_mcp_timeout: int = 30
 
-    # stdio transport settings
+    # Aegis stdio transport settings
     aegis_mcp_command: str = "python"
     aegis_mcp_args: str = "-m aegis_mcp.server"  # space-separated args
     aegis_mcp_working_dir: str | None = None
+
+    # Microsoft Learn MCP Integration (optional, HTTP only)
+    mslearn_mcp_enabled: bool = False
+    mslearn_mcp_url: str = "https://learn.microsoft.com/api/mcp"
+    mslearn_mcp_timeout: int = 30
 
     model_config = ConfigDict(env_file=".env", extra="ignore", frozen=True)
 

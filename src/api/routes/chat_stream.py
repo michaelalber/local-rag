@@ -44,7 +44,7 @@ async def generate_sse_stream(
 
     Events:
     - start: Processing started
-    - sources: Retrieved sources (books/compliance)
+    - sources: Retrieved sources (books/MCP sources)
     - token: Individual response tokens
     - done: Processing complete
     - error: Error occurred
@@ -55,26 +55,36 @@ async def generate_sse_stream(
 
         # Collect context from selected sources
         book_chunks: list[Chunk] = []
-        compliance_context: list[str] = []
+        mcp_context: list[str] = []
+
+        # Determine which sources to query
+        query_books = request.source in (QuerySource.BOOKS, QuerySource.BOTH, QuerySource.ALL)
+        query_compliance = request.source in (QuerySource.COMPLIANCE, QuerySource.BOTH, QuerySource.ALL)
+        query_mslearn = request.source in (QuerySource.MSLEARN, QuerySource.ALL)
 
         # Query books if requested
-        if request.source in (QuerySource.BOOKS, QuerySource.BOTH):
+        if query_books:
             book_chunks = await query_service._retrieve_book_chunks(request)
 
-        # Query compliance if requested
-        if request.source in (QuerySource.COMPLIANCE, QuerySource.BOTH):
-            compliance_context = await query_service._retrieve_compliance_context(request)
+        # Query MCP sources if requested
+        if query_compliance:
+            compliance_ctx = await query_service._retrieve_mcp_context("compliance", request)
+            mcp_context.extend(compliance_ctx)
+
+        if query_mslearn:
+            mslearn_ctx = await query_service._retrieve_mcp_context("mslearn", request)
+            mcp_context.extend(mslearn_ctx)
 
         # Event: sources
         sources_data = {
             "book_sources": format_sources(book_chunks),
-            "compliance_count": len(compliance_context),
+            "mcp_context_count": len(mcp_context),
         }
         yield format_sse_event("sources", sources_data)
 
         # Build combined context
         enhanced_chunks = query_service._build_enhanced_chunks(book_chunks)
-        combined_context = query_service._combine_context(enhanced_chunks, compliance_context)
+        combined_context = query_service._combine_context(enhanced_chunks, mcp_context)
 
         # Stream tokens from LLM
         async for token in query_service.llm_client.generate_stream(

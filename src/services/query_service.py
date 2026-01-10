@@ -11,13 +11,13 @@ from src.vectorstore import ChromaVectorStore
 from src.llm import OllamaLLMClient
 
 if TYPE_CHECKING:
-    from src.mcp import AegisMCPClient
+    from src.mcp import MCPManager
 
 logger = logging.getLogger(__name__)
 
 
 class QueryService:
-    """Handles RAG queries against loaded books and/or compliance data."""
+    """Handles RAG queries against loaded books and/or external MCP sources."""
 
     def __init__(
         self,
@@ -25,7 +25,7 @@ class QueryService:
         embedder,  # OllamaEmbedder or SentenceTransformerEmbedder
         llm_client: OllamaLLMClient,
         neighbor_window: int = 1,
-        aegis_client: AegisMCPClient | None = None,
+        mcp_manager: MCPManager | None = None,
     ):
         """
         Args:
@@ -33,19 +33,19 @@ class QueryService:
             embedder: Embedding service for query.
             llm_client: LLM for generation.
             neighbor_window: Number of neighboring chunks to include (±N).
-            aegis_client: Optional Aegis MCP client for compliance queries.
+            mcp_manager: Optional MCP manager for external knowledge sources.
         """
         self.vector_store = vector_store
         self.embedder = embedder
         self.llm_client = llm_client
         self.neighbor_window = neighbor_window
-        self.aegis_client = aegis_client
+        self.mcp_manager = mcp_manager
 
     async def query(self, request: QueryRequest) -> QueryResponse:
         """
         Process a RAG query with source routing.
 
-        Routes queries to books, compliance data, or both based on request.source.
+        Routes queries to books, MCP sources, or all based on request.source.
 
         Args:
             request: Query request with question, session, and source selection.
@@ -57,19 +57,29 @@ class QueryService:
 
         # Collect context from selected sources
         book_chunks: list[Chunk] = []
-        compliance_context: list[str] = []
+        mcp_context: list[str] = []
+
+        # Determine which sources to query
+        query_books = request.source in (QuerySource.BOOKS, QuerySource.BOTH, QuerySource.ALL)
+        query_compliance = request.source in (QuerySource.COMPLIANCE, QuerySource.BOTH, QuerySource.ALL)
+        query_mslearn = request.source in (QuerySource.MSLEARN, QuerySource.ALL)
 
         # Query books if requested
-        if request.source in (QuerySource.BOOKS, QuerySource.BOTH):
+        if query_books:
             book_chunks = await self._retrieve_book_chunks(request)
 
-        # Query compliance if requested
-        if request.source in (QuerySource.COMPLIANCE, QuerySource.BOTH):
-            compliance_context = await self._retrieve_compliance_context(request)
+        # Query MCP sources if requested
+        if query_compliance:
+            compliance_ctx = await self._retrieve_mcp_context("compliance", request)
+            mcp_context.extend(compliance_ctx)
+
+        if query_mslearn:
+            mslearn_ctx = await self._retrieve_mcp_context("mslearn", request)
+            mcp_context.extend(mslearn_ctx)
 
         # Build combined context for LLM
         enhanced_chunks = self._build_enhanced_chunks(book_chunks)
-        combined_context = self._combine_context(enhanced_chunks, compliance_context)
+        combined_context = self._combine_context(enhanced_chunks, mcp_context)
 
         # Generate answer with conversation history
         answer = await self.llm_client.generate(
@@ -121,38 +131,34 @@ class QueryService:
 
         return chunks
 
-    async def _retrieve_compliance_context(self, request: QueryRequest) -> list[str]:
-        """Retrieve compliance context from Aegis MCP.
+    async def _retrieve_mcp_context(
+        self, source: str, request: QueryRequest
+    ) -> list[str]:
+        """Retrieve context from an MCP source.
 
-        Returns formatted compliance results as context strings.
-        Fails gracefully if Aegis is not configured or unavailable.
+        Args:
+            source: MCP source name (e.g., "compliance", "mslearn")
+            request: Query request with query and top_k
+
+        Returns:
+            List of formatted context strings from the MCP source.
+            Fails gracefully if the source is not configured or unavailable.
         """
-        if not self.aegis_client:
-            logger.debug("Compliance requested but Aegis client not configured")
+        if not self.mcp_manager:
+            logger.debug("MCP source '%s' requested but MCP manager not configured", source)
             return []
 
         try:
-            results = await self.aegis_client.search_compliance(
+            context = await self.mcp_manager.search_context(
+                source=source,
                 query=request.query,
                 top_k=request.top_k,
             )
-
-            # Format compliance results as context strings
-            context_strings = []
-            for result in results:
-                context_str = (
-                    f"[Compliance Control: {result.control_id}]\n"
-                    f"Framework: {result.framework}\n"
-                    f"Title: {result.title}\n"
-                    f"Description: {result.description}\n"
-                )
-                context_strings.append(context_str)
-
-            logger.debug("Retrieved %d compliance results", len(context_strings))
-            return context_strings
+            logger.debug("Retrieved %d results from MCP source '%s'", len(context), source)
+            return context
 
         except Exception as e:
-            logger.warning("Failed to retrieve compliance context: %s", e)
+            logger.warning("Failed to retrieve context from MCP source '%s': %s", source, e)
             return []
 
     def _build_enhanced_chunks(self, chunks: list[Chunk]) -> list[Chunk]:

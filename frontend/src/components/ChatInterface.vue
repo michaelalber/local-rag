@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, watch, onMounted } from 'vue';
 import { TransitionGroup, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue';
-import { PaperAirplaneIcon, CpuChipIcon, XMarkIcon, ShieldCheckIcon, BookOpenIcon, SparklesIcon } from '@heroicons/vue/24/solid';
-import type { Message, QuerySource, Source } from '../types';
+import { PaperAirplaneIcon, CpuChipIcon, XMarkIcon, ShieldCheckIcon, BookOpenIcon, SparklesIcon, AcademicCapIcon } from '@heroicons/vue/24/solid';
+import type { Message, QuerySource, Source, MCPSource } from '../types';
 import ChatMessage from './ChatMessage.vue';
 import ConfirmDialog from './ConfirmDialog.vue';
 import { useApi } from '../composables/useApi';
@@ -18,6 +18,12 @@ interface OllamaModel {
   best_for: string[];
   size: string;
 }
+
+// Icon mapping for MCP sources
+const sourceIcons: Record<string, any> = {
+  compliance: ShieldCheckIcon,
+  mslearn: AcademicCapIcon,
+};
 
 const props = defineProps<Props>();
 
@@ -35,53 +41,79 @@ const selectedModel = ref<string | null>(
 );
 const defaultModel = ref<string>('mistral:7b-instruct-q4_K_M');
 
-// Source selection
+// Source selection - dynamic from health check
 const selectedSource = ref<QuerySource>(
   (sessionStorage.getItem('selectedSource') as QuerySource) || 'books'
 );
-const aegisAvailable = ref(false);
-const aegisTransport = ref<string | null>(null);
+const mcpSources = ref<MCPSource[]>([]);
+
+// Helper to check if an MCP source is available
+function isMcpSourceAvailable(name: string): boolean {
+  const source = mcpSources.value.find(s => s.name === name);
+  return source?.available ?? false;
+}
+
+// Check if any MCP source is available
+const anyMcpAvailable = computed(() => mcpSources.value.some(s => s.available));
 
 // Check if source selection should allow sending
 const canSendMessage = computed(() => {
+  const hasQuery = queryInput.value.trim().length > 0 && !loading.value;
+  if (!hasQuery) return false;
+
   // For books source, require books to be uploaded
   if (selectedSource.value === 'books') {
-    return props.hasBooks && queryInput.value.trim().length > 0 && !loading.value;
+    return props.hasBooks;
   }
-  // For compliance source, require aegis to be available
+  // For specific MCP source, check if available
   if (selectedSource.value === 'compliance') {
-    return aegisAvailable.value && queryInput.value.trim().length > 0 && !loading.value;
+    return isMcpSourceAvailable('compliance');
   }
-  // For both, require either books or aegis
-  return (props.hasBooks || aegisAvailable.value) && queryInput.value.trim().length > 0 && !loading.value;
+  if (selectedSource.value === 'mslearn') {
+    return isMcpSourceAvailable('mslearn');
+  }
+  // For 'all' or 'both', require at least one source
+  return props.hasBooks || anyMcpAvailable.value;
 });
 
-// Source options for the selector
-const sourceOptions = computed(() => [
-  {
-    value: 'books' as QuerySource,
-    label: 'Books',
-    icon: BookOpenIcon,
-    disabled: false,
-    description: 'Search your uploaded books',
-  },
-  {
-    value: 'compliance' as QuerySource,
-    label: 'Compliance',
-    icon: ShieldCheckIcon,
-    disabled: !aegisAvailable.value,
-    description: aegisAvailable.value
-      ? 'Search NIST, OWASP, DOE frameworks'
-      : 'Aegis MCP not configured',
-  },
-  {
-    value: 'both' as QuerySource,
-    label: 'Both',
-    icon: SparklesIcon,
-    disabled: !aegisAvailable.value,
-    description: 'Search books and compliance frameworks',
-  },
-]);
+// Source options for the selector - built dynamically
+const sourceOptions = computed(() => {
+  const options = [
+    {
+      value: 'books' as QuerySource,
+      label: 'Books',
+      icon: BookOpenIcon,
+      disabled: false,
+      description: 'Search your uploaded books',
+    },
+  ];
+
+  // Add MCP sources dynamically
+  for (const source of mcpSources.value) {
+    options.push({
+      value: source.name as QuerySource,
+      label: source.display_name,
+      icon: sourceIcons[source.name] || SparklesIcon,
+      disabled: !source.available,
+      description: source.available
+        ? `Search ${source.display_name}`
+        : `${source.display_name} not available`,
+    });
+  }
+
+  // Add "All" option if there are multiple sources
+  if (mcpSources.value.length > 0) {
+    options.push({
+      value: 'all' as QuerySource,
+      label: 'All',
+      icon: SparklesIcon,
+      disabled: !anyMcpAvailable.value && !props.hasBooks,
+      description: 'Search all available sources',
+    });
+  }
+
+  return options;
+});
 
 watch(
   () => props.hasBooks,
@@ -109,14 +141,13 @@ onMounted(async () => {
     console.error('Failed to fetch models:', err);
   }
 
-  // Check Aegis availability
+  // Fetch MCP sources from health check
   try {
     const health = await healthCheck();
-    aegisAvailable.value = health.aegis_available;
-    aegisTransport.value = health.aegis_transport;
+    mcpSources.value = health.mcp_sources || [];
   } catch (err) {
     console.error('Failed to check health:', err);
-    aegisAvailable.value = false;
+    mcpSources.value = [];
   }
 });
 
@@ -128,6 +159,22 @@ function selectSource(source: QuerySource) {
 const currentModelName = computed(() => {
   const model = availableModels.value.find(m => m.id === selectedModel.value);
   return model?.name || 'Default Model';
+});
+
+// Dynamic placeholder text based on selected source
+const placeholderText = computed(() => {
+  if (selectedSource.value === 'books') {
+    return 'Ask a question about your books...';
+  }
+  if (selectedSource.value === 'all') {
+    return 'Ask about your books and connected knowledge sources...';
+  }
+  // For MCP sources, use the display name
+  const source = mcpSources.value.find(s => s.name === selectedSource.value);
+  if (source) {
+    return `Ask about ${source.display_name}...`;
+  }
+  return 'Ask a question...';
 });
 
 function selectModel(modelId: string) {
@@ -326,20 +373,20 @@ function confirmClearChat() {
         </div>
       </div>
 
-      <!-- Empty state: Compliance source but Aegis not available -->
-      <div v-else-if="selectedSource === 'compliance' && !aegisAvailable" class="h-full flex items-center justify-center">
+      <!-- Empty state: MCP source not available -->
+      <div v-else-if="selectedSource !== 'books' && selectedSource !== 'all' && !isMcpSourceAvailable(selectedSource)" class="h-full flex items-center justify-center">
         <div class="text-center text-gray-500">
-          <ShieldCheckIcon class="mx-auto h-12 w-12 text-gray-400" />
-          <p class="mt-2">Aegis MCP is not configured</p>
-          <p class="mt-1 text-sm">Configure AEGIS_MCP_TRANSPORT to enable compliance queries</p>
+          <component :is="sourceIcons[selectedSource] || SparklesIcon" class="mx-auto h-12 w-12 text-gray-400" />
+          <p class="mt-2">{{ selectedSource }} source is not configured</p>
+          <p class="mt-1 text-sm">Enable the MCP source in your configuration</p>
         </div>
       </div>
 
-      <!-- Empty state: Both source but nothing available -->
-      <div v-else-if="selectedSource === 'both' && !hasBooks && !aegisAvailable" class="h-full flex items-center justify-center">
+      <!-- Empty state: All source but nothing available -->
+      <div v-else-if="selectedSource === 'all' && !hasBooks && !anyMcpAvailable" class="h-full flex items-center justify-center">
         <div class="text-center text-gray-500">
           <SparklesIcon class="mx-auto h-12 w-12 text-gray-400" />
-          <p class="mt-2">Upload books or configure Aegis MCP to start chatting</p>
+          <p class="mt-2">Upload books or configure MCP sources to start chatting</p>
         </div>
       </div>
 
@@ -347,16 +394,16 @@ function confirmClearChat() {
       <div v-else-if="messages.length === 0" class="h-full flex items-center justify-center">
         <div class="text-center text-gray-500">
           <component
-            :is="selectedSource === 'compliance' ? ShieldCheckIcon : selectedSource === 'both' ? SparklesIcon : BookOpenIcon"
+            :is="sourceIcons[selectedSource] || (selectedSource === 'books' ? BookOpenIcon : SparklesIcon)"
             class="mx-auto h-12 w-12 text-gray-400"
           />
           <p class="mt-2">
             <template v-if="selectedSource === 'books'">Ask a question about your books</template>
-            <template v-else-if="selectedSource === 'compliance'">Ask about NIST, OWASP, or DOE compliance</template>
-            <template v-else>Ask about your books or compliance frameworks</template>
+            <template v-else-if="selectedSource === 'all'">Ask about your books and connected knowledge sources</template>
+            <template v-else>Ask about {{ mcpSources.find(s => s.name === selectedSource)?.display_name || selectedSource }}</template>
           </p>
-          <p v-if="aegisAvailable && aegisTransport" class="mt-1 text-xs text-green-600">
-            Aegis connected via {{ aegisTransport }}
+          <p v-if="mcpSources.length > 0" class="mt-1 text-xs text-green-600">
+            {{ mcpSources.filter(s => s.available).length }} MCP source(s) connected
           </p>
         </div>
       </div>
@@ -401,11 +448,7 @@ function confirmClearChat() {
         <textarea
           v-model="queryInput"
           @keydown="handleKeyDown"
-          :placeholder="selectedSource === 'books'
-            ? 'Ask a question about your books...'
-            : selectedSource === 'compliance'
-              ? 'Ask about NIST, OWASP, or DOE compliance...'
-              : 'Ask about your books or compliance frameworks...'"
+          :placeholder="placeholderText"
           :disabled="!canSendMessage && queryInput.trim().length === 0"
           rows="2"
           class="flex-1 px-3 py-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"

@@ -8,7 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.models import BookChatError
 
 from .config import get_settings
-from .dependencies import shutdown_aegis_client
+from .dependencies import shutdown_aegis_client, shutdown_mcp_manager
 from .exception_handlers import book_chat_error_handler, general_exception_handler
 from .middleware import SecurityHeadersMiddleware
 from .routes import books_router, chat_router, chat_stream_router, health_router, models_router
@@ -19,8 +19,9 @@ async def lifespan(app: FastAPI):
     """Application lifespan events."""
     # Startup
     yield
-    # Shutdown
-    await shutdown_aegis_client()
+    # Shutdown - disconnect all MCP clients
+    await shutdown_mcp_manager()
+    await shutdown_aegis_client()  # Legacy, for backward compatibility
 
 
 def create_app() -> FastAPI:
