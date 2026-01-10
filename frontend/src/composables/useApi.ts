@@ -1,5 +1,5 @@
 import { ref } from 'vue';
-import type { Book, ChatResponse } from '../types';
+import type { Book, ChatResponse, HealthResponse, QuerySource, StreamSourcesEvent } from '../types';
 
 // Generate session ID once per browser session
 const SESSION_ID = sessionStorage.getItem('sessionId') || crypto.randomUUID();
@@ -171,13 +171,14 @@ export function useApi() {
     topK: number = 5,
     history: Array<{role: string, content: string}> = [],
     model?: string,
-    retrievalPercentage?: number
+    retrievalPercentage?: number,
+    source: QuerySource = 'books'
   ): Promise<ChatResponse> {
     loading.value = true;
     error.value = null;
 
     try {
-      const body: any = { query, top_k: topK, history };
+      const body: any = { query, top_k: topK, history, source };
       if (model) {
         body.model = model;
       }
@@ -202,6 +203,117 @@ export function useApi() {
       return await response.json();
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Chat failed';
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function healthCheck(): Promise<HealthResponse> {
+    const response = await fetch(`${API_BASE}/health`);
+    if (!response.ok) {
+      throw new Error(`Health check failed: ${response.status}`);
+    }
+    return await response.json();
+  }
+
+  interface StreamCallbacks {
+    onStart?: () => void;
+    onSources?: (sources: StreamSourcesEvent) => void;
+    onToken?: (token: string) => void;
+    onDone?: () => void;
+    onError?: (message: string) => void;
+  }
+
+  async function chatStream(
+    query: string,
+    callbacks: StreamCallbacks,
+    options: {
+      topK?: number;
+      history?: Array<{role: string, content: string}>;
+      model?: string;
+      retrievalPercentage?: number;
+      source?: QuerySource;
+    } = {}
+  ): Promise<void> {
+    loading.value = true;
+    error.value = null;
+
+    const body: any = {
+      query,
+      top_k: options.topK ?? 5,
+      history: options.history ?? [],
+      source: options.source ?? 'books',
+    };
+    if (options.model) {
+      body.model = options.model;
+    }
+    if (options.retrievalPercentage !== undefined) {
+      body.retrieval_percentage = options.retrievalPercentage;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/chat/stream`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'session-id': SESSION_ID,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || `Stream failed: ${response.status}`);
+      }
+
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error('No response body');
+      }
+
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
+
+        for (const line of lines) {
+          if (line.startsWith('event: ')) {
+            const eventType = line.substring(7).trim();
+            continue;
+          }
+          if (line.startsWith('data: ')) {
+            const dataStr = line.substring(6);
+            try {
+              const data = JSON.parse(dataStr);
+
+              // Determine event type from data content
+              if ('status' in data && data.status === 'processing') {
+                callbacks.onStart?.();
+              } else if ('book_sources' in data) {
+                callbacks.onSources?.(data);
+              } else if ('content' in data && !('status' in data)) {
+                callbacks.onToken?.(data.content);
+              } else if ('status' in data && data.status === 'complete') {
+                callbacks.onDone?.();
+              } else if ('message' in data) {
+                callbacks.onError?.(data.message);
+              }
+            } catch {
+              // Skip invalid JSON
+            }
+          }
+        }
+      }
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Stream failed';
+      callbacks.onError?.(error.value);
       throw err;
     } finally {
       loading.value = false;
@@ -240,6 +352,8 @@ export function useApi() {
     deleteBook,
     getModels,
     chat,
+    chatStream,
+    healthCheck,
     clearSession,
     sessionId: SESSION_ID,
   };

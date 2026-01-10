@@ -4,6 +4,9 @@ Singleton services are cached at module level for efficiency.
 FastAPI Depends() functions provide the DI integration.
 """
 
+from __future__ import annotations
+
+import logging
 from functools import lru_cache
 from typing import Annotated
 
@@ -11,11 +14,14 @@ from fastapi import Depends
 
 from src.embeddings import OllamaEmbedder, SentenceTransformerEmbedder
 from src.llm import OllamaLLMClient
+from src.mcp import AegisMCPClient
 from src.parsers import FileValidator, TextChunker, get_parser
 from src.services import BookIngestionService, QueryService, SessionManager
 from src.vectorstore import ChromaVectorStore
 
-from .config import get_settings
+from .config import MCPTransport, get_settings
+
+logger = logging.getLogger(__name__)
 
 # Known Ollama embedding models
 OLLAMA_EMBEDDING_MODELS = {
@@ -76,6 +82,73 @@ def get_session_manager_singleton() -> SessionManager:
     return SessionManager(max_books=settings.max_books_per_session)
 
 
+# --- Aegis MCP Client (lazy async initialization) ---
+
+_aegis_client: AegisMCPClient | None = None
+_aegis_client_initialized: bool = False
+
+
+def _create_aegis_client() -> AegisMCPClient | None:
+    """Create Aegis MCP client based on configuration (not connected yet)."""
+    settings = get_settings()
+
+    if not settings.aegis_mcp_transport:
+        return None
+
+    if settings.aegis_mcp_transport == MCPTransport.STDIO:
+        return AegisMCPClient(
+            transport="stdio",
+            command=settings.aegis_mcp_command,
+            args=settings.aegis_mcp_args.split() if settings.aegis_mcp_args else [],
+            working_dir=settings.aegis_mcp_working_dir,
+        )
+    else:  # HTTP
+        return AegisMCPClient(
+            transport="http",
+            http_url=settings.aegis_mcp_url,
+            http_timeout=settings.aegis_mcp_timeout,
+        )
+
+
+async def get_aegis_client() -> AegisMCPClient | None:
+    """Get Aegis MCP client (lazily initialized on first request).
+
+    Returns None if Aegis is not configured.
+    """
+    global _aegis_client, _aegis_client_initialized
+
+    if _aegis_client_initialized:
+        return _aegis_client
+
+    _aegis_client = _create_aegis_client()
+    _aegis_client_initialized = True
+
+    if _aegis_client:
+        try:
+            await _aegis_client.connect()
+            logger.info("Aegis MCP client connected successfully")
+        except Exception as e:
+            logger.error("Failed to connect Aegis MCP client: %s", e)
+            _aegis_client = None
+
+    return _aegis_client
+
+
+async def shutdown_aegis_client() -> None:
+    """Disconnect Aegis MCP client on shutdown."""
+    global _aegis_client, _aegis_client_initialized
+
+    if _aegis_client:
+        try:
+            await _aegis_client.disconnect()
+            logger.info("Aegis MCP client disconnected")
+        except Exception as e:
+            logger.warning("Error disconnecting Aegis MCP client: %s", e)
+
+    _aegis_client = None
+    _aegis_client_initialized = False
+
+
 # --- FastAPI dependency functions ---
 
 
@@ -117,10 +190,11 @@ def get_ingestion_service(
     )
 
 
-def get_query_service(
+async def get_query_service(
     vector_store: Annotated[ChromaVectorStore, Depends(get_vector_store)],
     embedder: Annotated[Embedder, Depends(get_embedder)],
     llm_client: Annotated[OllamaLLMClient, Depends(get_llm_client)],
+    aegis_client: Annotated[AegisMCPClient | None, Depends(get_aegis_client)],
 ) -> QueryService:
     """FastAPI dependency for query service."""
     settings = get_settings()
@@ -129,4 +203,5 @@ def get_query_service(
         embedder=embedder,
         llm_client=llm_client,
         neighbor_window=settings.neighbor_window,
+        aegis_client=aegis_client,
     )

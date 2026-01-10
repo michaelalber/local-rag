@@ -1,14 +1,26 @@
 """FastAPI application factory."""
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.models import BookChatError
 
 from .config import get_settings
+from .dependencies import shutdown_aegis_client
 from .exception_handlers import book_chat_error_handler, general_exception_handler
 from .middleware import SecurityHeadersMiddleware
-from .routes import books_router, chat_router, health_router, models_router
+from .routes import books_router, chat_router, chat_stream_router, health_router, models_router
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan events."""
+    # Startup
+    yield
+    # Shutdown
+    await shutdown_aegis_client()
 
 
 def create_app() -> FastAPI:
@@ -19,6 +31,7 @@ def create_app() -> FastAPI:
         title="LocalBookChat",
         description="Chat with your eBooks using local LLM",
         version="0.1.0",
+        lifespan=lifespan,
     )
 
     # Security headers
@@ -41,6 +54,7 @@ def create_app() -> FastAPI:
     app.include_router(health_router, prefix=settings.api_prefix)
     app.include_router(books_router, prefix=settings.api_prefix)
     app.include_router(chat_router, prefix=settings.api_prefix)
+    app.include_router(chat_stream_router, prefix=settings.api_prefix)
     app.include_router(models_router, prefix=settings.api_prefix)
 
     return app

@@ -10,6 +10,7 @@ from fastapi.testclient import TestClient
 from httpx import ASGITransport, AsyncClient
 
 from src.api.dependencies import (
+    get_aegis_client,
     get_ingestion_service,
     get_query_service,
     get_session_manager,
@@ -81,14 +82,21 @@ def app(
     """Create test app with mocked dependencies."""
     application = create_app()
 
+    async def override_aegis_client():
+        return None
+
+    async def override_query_service():
+        return mock_query_service
+
     application.dependency_overrides[get_ingestion_service] = (
         lambda: mock_ingestion_service
     )
-    application.dependency_overrides[get_query_service] = lambda: mock_query_service
+    application.dependency_overrides[get_query_service] = override_query_service
     application.dependency_overrides[get_session_manager] = (
         lambda: mock_session_manager
     )
     application.dependency_overrides[get_vector_store] = lambda: mock_vector_store
+    application.dependency_overrides[get_aegis_client] = override_aegis_client
 
     return application
 

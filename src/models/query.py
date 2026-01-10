@@ -1,16 +1,26 @@
 """Query request and response entities."""
 
 from dataclasses import dataclass
+from enum import Enum
 
 from .chunk import Chunk
 
 
+class QuerySource(str, Enum):
+    """Available query sources."""
+
+    BOOKS = "books"
+    COMPLIANCE = "compliance"
+    BOTH = "both"
+
+
 @dataclass
 class QueryRequest:
-    """A user query against loaded books."""
+    """A user query against loaded books and/or compliance data."""
 
     query: str
     session_id: str
+    source: QuerySource = QuerySource.BOOKS
     top_k: int = 5  # Deprecated: use retrieval_percentage instead
     retrieval_percentage: float | None = None  # Percentage of chunks to retrieve (0.5-2.0)
     conversation_history: list[dict[str, str]] | None = None

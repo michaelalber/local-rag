@@ -1,6 +1,7 @@
 """Ollama LLM client implementation."""
 
 import logging
+from collections.abc import AsyncGenerator
 
 import ollama
 
@@ -97,6 +98,69 @@ class OllamaLLMClient:
             raise
         except Exception as e:
             logger.error("Unexpected error during LLM generation: %s", e)
+            raise LLMConnectionError(f"Unexpected error: {e}") from e
+
+    async def generate_stream(
+        self,
+        prompt: str,
+        context: list[str] | list[Chunk],
+        conversation_history: list[dict[str, str]] | None = None,
+        model: str | None = None,
+    ) -> AsyncGenerator[str, None]:
+        """
+        Generate streaming response using Ollama with RAG context.
+
+        Yields tokens as they are generated for real-time streaming.
+
+        Args:
+            prompt: User's question.
+            context: List of relevant text chunks (strings or Chunk objects).
+            conversation_history: Previous messages in the conversation (optional).
+            model: Override default model for this request (optional).
+
+        Yields:
+            Individual response tokens as they arrive.
+
+        Raises:
+            LLMConnectionError: If Ollama server is unreachable or returns error.
+        """
+        try:
+            # Handle both string context and Chunk objects
+            if context and isinstance(context[0], str):
+                chunks = [
+                    Chunk(id=None, book_id=None, content=text)
+                    for text in context
+                ]
+            else:
+                chunks = context
+
+            # Build the RAG prompt
+            full_prompt = self.prompt_builder.build_prompt(
+                query=prompt, context_chunks=chunks, conversation_history=conversation_history
+            )
+
+            # Use provided model or default
+            selected_model = model if model else self.model
+
+            # Stream response from Ollama
+            async for chunk in await self.client.chat(
+                model=selected_model,
+                messages=[{"role": "user", "content": full_prompt}],
+                stream=True,
+            ):
+                if "message" in chunk and "content" in chunk["message"]:
+                    yield chunk["message"]["content"]
+
+        except ollama.ResponseError as e:
+            logger.error("Ollama API error during streaming: %s", e)
+            raise LLMConnectionError(f"Ollama API error: {e}") from e
+        except (ConnectionError, TimeoutError, OSError) as e:
+            logger.error("Failed to connect to Ollama server: %s", e)
+            raise LLMConnectionError(f"Failed to connect to Ollama server: {e}") from e
+        except LLMConnectionError:
+            raise
+        except Exception as e:
+            logger.error("Unexpected error during LLM streaming: %s", e)
             raise LLMConnectionError(f"Unexpected error: {e}") from e
 
     async def health_check(self) -> bool:

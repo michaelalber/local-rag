@@ -4,7 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Header
 
-from src.models import QueryRequest
+from src.models import QueryRequest, QuerySource
 from src.services import QueryService
 
 from ..dependencies import get_query_service
@@ -20,9 +20,10 @@ async def chat(
     query_service: Annotated[QueryService, Depends(get_query_service)],
 ) -> ChatResponse:
     """
-    Ask a question about loaded books.
+    Ask a question about loaded books and/or compliance data.
 
     Uses RAG to find relevant context and generate an answer.
+    Source can be 'books', 'compliance', or 'both'.
     """
     # Convert ChatMessage objects to dicts for the domain layer
     conversation_history = None
@@ -32,9 +33,13 @@ async def chat(
             for msg in chat_request.history
         ]
 
+    # Map schema enum to domain enum
+    source = QuerySource(chat_request.source.value)
+
     query_request = QueryRequest(
         query=chat_request.query,
         session_id=session_id,
+        source=source,
         top_k=chat_request.top_k,
         retrieval_percentage=chat_request.retrieval_percentage,
         conversation_history=conversation_history,

@@ -1,10 +1,18 @@
 """API configuration."""
 
+from enum import Enum
 from functools import lru_cache
 from pathlib import Path
 
 from pydantic import ConfigDict
 from pydantic_settings import BaseSettings
+
+
+class MCPTransport(str, Enum):
+    """MCP transport protocol for Aegis connection."""
+
+    STDIO = "stdio"
+    HTTP = "http"
 
 
 class Settings(BaseSettings):
@@ -31,6 +39,18 @@ class Settings(BaseSettings):
 
     # API
     api_prefix: str = "/api"
+
+    # Aegis MCP Integration (optional)
+    aegis_mcp_transport: MCPTransport | None = None  # "stdio" or "http", None to disable
+
+    # HTTP transport settings
+    aegis_mcp_url: str = "http://localhost:8765/mcp"
+    aegis_mcp_timeout: int = 30
+
+    # stdio transport settings
+    aegis_mcp_command: str = "python"
+    aegis_mcp_args: str = "-m aegis_mcp.server"  # space-separated args
+    aegis_mcp_working_dir: str | None = None
 
     model_config = ConfigDict(env_file=".env", extra="ignore", frozen=True)
 
