@@ -1,6 +1,6 @@
 # LocalBookChat
 
-![CI](https://github.com/michaelalber/local-rag/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/michaelalber/local-rag/actions/workflows/ci.yml/badge.svg?branch=main)
 
 A privacy-focused, local-first RAG (Retrieval-Augmented Generation) application that lets you chat with your eBooks using a local LLM. Upload PDF, EPUB, Markdown, or text files and ask questions - all processing happens on your machine with no external API calls.
 
