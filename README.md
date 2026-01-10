@@ -1,10 +1,10 @@
-# LocalBookChat
+# KnowledgeHub
 
 ![CI](https://github.com/michaelalber/local-rag/actions/workflows/ci.yml/badge.svg?branch=main)
 
-A privacy-focused, local-first RAG (Retrieval-Augmented Generation) application that lets you chat with your eBooks and external knowledge sources using a local LLM. Upload PDF, EPUB, Markdown, or text files and ask questions - all processing happens on your machine.
+A privacy-focused, local-first RAG (Retrieval-Augmented Generation) application for chatting with your documents and external knowledge sources using a local LLM. Upload PDFs, eBooks, Markdown, or text files and ask questions - all processing happens on your machine.
 
-Optionally connect to external knowledge via [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) servers like Microsoft Learn or security compliance frameworks (NIST, OWASP, DOE).
+Connect to external knowledge via [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) servers like Microsoft Learn or security compliance frameworks (NIST, OWASP, DOE).
 
 ## Features
 
@@ -391,7 +391,7 @@ USE_DOCLING_PARSER=true
 
 ## MCP Integration
 
-LocalBookChat supports the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) to connect to external knowledge sources alongside your local books.
+KnowledgeHub supports the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) to connect to external knowledge sources alongside your local documents.
 
 ### Available MCP Sources
 

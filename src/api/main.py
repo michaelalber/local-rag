@@ -29,8 +29,8 @@ def create_app() -> FastAPI:
     settings = get_settings()
 
     app = FastAPI(
-        title="LocalBookChat",
-        description="Chat with your eBooks using local LLM",
+        title="KnowledgeHub",
+        description="Chat with your documents and knowledge sources using local LLM",
         version="0.1.0",
         lifespan=lifespan,
     )

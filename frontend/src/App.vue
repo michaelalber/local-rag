@@ -78,7 +78,7 @@ async function handleClearAll() {
                 d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
               />
             </svg>
-            <h1 class="text-2xl font-bold text-gray-900">LocalBookChat</h1>
+            <h1 class="text-2xl font-bold text-gray-900">KnowledgeHub</h1>
           </div>
           <div class="text-xs text-gray-500 font-mono">
             Session: {{ sessionId.substring(0, 8) }}...
@@ -119,10 +119,10 @@ async function handleClearAll() {
     <footer class="mt-12 border-t border-gray-200 bg-white">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <p class="text-center text-sm text-gray-500">
-          LocalBookChat - Privacy-focused eBook RAG using local models
+          KnowledgeHub - Privacy-focused RAG using local models
         </p>
         <p class="text-center text-xs text-gray-400 mt-1">
-          All data stays on your machine. No external API calls.
+          Chat with documents and knowledge sources. All processing on your machine.
         </p>
       </div>
     </footer>
