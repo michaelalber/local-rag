@@ -212,6 +212,9 @@ data/uploads/*
 data/chroma/*
 !data/**/.gitkeep
 
+# PID files from start-servers.sh
+*.pid
+
 # OS files
 .DS_Store
 Thumbs.db
