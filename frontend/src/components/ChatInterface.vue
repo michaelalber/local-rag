@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, watch, onMounted } from 'vue';
-import { TransitionGroup, Dialog, DialogPanel, DialogTitle } from '@headlessui/vue';
-import { PaperAirplaneIcon, CpuChipIcon, XMarkIcon, ShieldCheckIcon, BookOpenIcon, SparklesIcon, AcademicCapIcon, GlobeAltIcon } from '@heroicons/vue/24/solid';
+import { TransitionGroup, Dialog, DialogPanel, DialogTitle, Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue';
+import { PaperAirplaneIcon, CpuChipIcon, XMarkIcon, ShieldCheckIcon, BookOpenIcon, SparklesIcon, AcademicCapIcon, GlobeAltIcon, ChevronUpDownIcon, CheckIcon } from '@heroicons/vue/24/solid';
 import type { Message, QuerySource, Source, MCPSource } from '../types';
 import ChatMessage from './ChatMessage.vue';
 import ConfirmDialog from './ConfirmDialog.vue';
@@ -112,6 +112,11 @@ const sourceOptions = computed(() => {
   }
 
   return options;
+});
+
+// Get the currently selected source option
+const selectedSourceOption = computed(() => {
+  return sourceOptions.value.find(opt => opt.value === selectedSource.value) || sourceOptions.value[0];
 });
 
 watch(
@@ -324,27 +329,55 @@ function confirmClearChat() {
       <div class="flex items-center justify-between">
         <h2 class="text-xl font-semibold">Chat</h2>
         <div class="flex items-center space-x-4">
-          <!-- Source Selector -->
-          <div class="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
-            <button
-              v-for="option in sourceOptions"
-              :key="option.value"
-              @click="selectSource(option.value)"
-              :disabled="option.disabled"
-              :title="option.description"
-              class="flex items-center space-x-1 px-3 py-1.5 text-sm rounded-md transition-all"
-              :class="[
-                selectedSource === option.value
-                  ? 'bg-white text-blue-600 shadow-sm'
-                  : option.disabled
-                    ? 'text-gray-400 cursor-not-allowed'
-                    : 'text-gray-600 hover:text-gray-900'
-              ]"
-            >
-              <component :is="option.icon" class="h-4 w-4" />
-              <span>{{ option.label }}</span>
-            </button>
-          </div>
+          <!-- Source Selector Dropdown -->
+          <Listbox :model-value="selectedSource" @update:model-value="selectSource">
+            <div class="relative">
+              <ListboxButton class="relative w-44 cursor-pointer rounded-lg bg-gray-100 py-2 pl-3 pr-10 text-left text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <span class="flex items-center space-x-2">
+                  <component :is="selectedSourceOption.icon" class="h-4 w-4 text-gray-600" />
+                  <span class="block truncate">{{ selectedSourceOption.label }}</span>
+                </span>
+                <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                  <ChevronUpDownIcon class="h-4 w-4 text-gray-400" />
+                </span>
+              </ListboxButton>
+              <transition
+                leave-active-class="transition duration-100 ease-in"
+                leave-from-class="opacity-100"
+                leave-to-class="opacity-0"
+              >
+                <ListboxOptions class="absolute z-10 mt-1 max-h-60 w-56 overflow-auto rounded-lg bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                  <ListboxOption
+                    v-for="option in sourceOptions"
+                    :key="option.value"
+                    :value="option.value"
+                    :disabled="option.disabled"
+                    v-slot="{ active, selected }"
+                    as="template"
+                  >
+                    <li
+                      :class="[
+                        active ? 'bg-blue-50 text-blue-900' : 'text-gray-900',
+                        option.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer',
+                        'relative select-none py-2 pl-10 pr-4'
+                      ]"
+                    >
+                      <span :class="[selected ? 'font-medium' : 'font-normal', 'flex items-center space-x-2']">
+                        <component :is="option.icon" class="h-4 w-4" />
+                        <span class="truncate">{{ option.label }}</span>
+                      </span>
+                      <span v-if="selected" class="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600">
+                        <CheckIcon class="h-4 w-4" />
+                      </span>
+                      <span v-if="option.disabled" class="absolute inset-y-0 right-0 flex items-center pr-3 text-xs text-gray-400">
+                        Unavailable
+                      </span>
+                    </li>
+                  </ListboxOption>
+                </ListboxOptions>
+              </transition>
+            </div>
+          </Listbox>
           <button
             @click="showModelSelector = true"
             type="button"
