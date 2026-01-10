@@ -59,11 +59,11 @@ class ChromaVectorStore:
             raise ValueError("All chunks must have embeddings")
 
         # ChromaDB has a max batch size (~5461), so batch large uploads
-        BATCH_SIZE = 1000
+        batch_size = 1000
         total_chunks = len(chunks)
 
-        for i in range(0, total_chunks, BATCH_SIZE):
-            end_idx = min(i + BATCH_SIZE, total_chunks)
+        for i in range(0, total_chunks, batch_size):
+            end_idx = min(i + batch_size, total_chunks)
             batch_ids = ids[i:end_idx]
             batch_embeddings = embeddings[i:end_idx]
             batch_documents = documents[i:end_idx]
@@ -76,11 +76,11 @@ class ChromaVectorStore:
                 metadatas=batch_metadatas,
             )
 
-            if total_chunks > BATCH_SIZE:
+            if total_chunks > batch_size:
                 logger.info(
                     "Added batch %d/%d (%d/%d chunks)",
-                    i // BATCH_SIZE + 1,
-                    (total_chunks + BATCH_SIZE - 1) // BATCH_SIZE,
+                    i // batch_size + 1,
+                    (total_chunks + batch_size - 1) // batch_size,
                     end_idx,
                     total_chunks,
                 )
@@ -135,7 +135,11 @@ class ChromaVectorStore:
                     has_code=metadata.get("has_code", False),
                     code_language=metadata.get("code_language") or None,
                     sequence_number=metadata.get("sequence_number", 0),
-                    parent_chunk_id=UUID(metadata["parent_chunk_id"]) if metadata.get("parent_chunk_id") else None,
+                    parent_chunk_id=(
+                        UUID(metadata["parent_chunk_id"])
+                        if metadata.get("parent_chunk_id")
+                        else None
+                    ),
                     parent_content=metadata.get("parent_content") or None,
                 )
                 chunks.append(chunk)
@@ -236,7 +240,8 @@ class ChromaVectorStore:
                         if chunk_seq in seq_numbers:
                             # Check for embeddings safely
                             embedding = None
-                            if results.get("embeddings") is not None and i < len(results["embeddings"]):
+                            has_embeddings = results.get("embeddings") is not None
+                            if has_embeddings and i < len(results["embeddings"]):
                                 embedding = results["embeddings"][i]
 
                             chunk = Chunk(

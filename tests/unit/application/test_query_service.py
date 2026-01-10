@@ -1,11 +1,12 @@
 """Tests for query service."""
 
-import pytest
 from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
-from src.services import QueryService
+import pytest
+
 from src.models import Chunk, QueryRequest, QueryResponse
+from src.services import QueryService
 
 
 class TestQueryService:

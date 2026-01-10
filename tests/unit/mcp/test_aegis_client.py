@@ -1,7 +1,8 @@
 """Tests for Aegis MCP client."""
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 from src.mcp.aegis_client import AegisMCPClient
 from src.mcp.models import ComplianceSearchResult, ControlDetail
@@ -155,7 +156,11 @@ class TestAegisMCPClientSearchCompliance:
         """Test search_compliance returns parsed results."""
         # Mock MCP response
         mock_content = MagicMock()
-        mock_content.text = '[{"control_id": "AC-1", "title": "Access Control Policy", "description": "Establish access control policy", "framework": "nist-800-53", "relevance_score": 0.95}]'
+        mock_content.text = (
+            '[{"control_id": "AC-1", "title": "Access Control Policy", '
+            '"description": "Establish access control policy", '
+            '"framework": "nist-800-53", "relevance_score": 0.95}]'
+        )
 
         mock_result = MagicMock()
         mock_result.content = [mock_content]
@@ -222,7 +227,12 @@ class TestAegisMCPClientGetControl:
     async def test_get_control_returns_detail(self, connected_client):
         """Test get_control returns control detail."""
         mock_content = MagicMock()
-        mock_content.text = '{"control_id": "AC-1", "title": "Access Control Policy", "description": "Establish policy", "framework": "nist-800-53", "requirements": ["Req 1", "Req 2"], "guidance": "Implementation guidance"}'
+        mock_content.text = (
+            '{"control_id": "AC-1", "title": "Access Control Policy", '
+            '"description": "Establish policy", "framework": "nist-800-53", '
+            '"requirements": ["Req 1", "Req 2"], '
+            '"guidance": "Implementation guidance"}'
+        )
 
         mock_result = MagicMock()
         mock_result.content = [mock_content]

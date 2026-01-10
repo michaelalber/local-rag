@@ -29,7 +29,7 @@ class MCPManager:
 
     def __init__(self):
         """Initialize empty adapter registry."""
-        self._adapters: dict[str, "MCPAdapter"] = {}
+        self._adapters: dict[str, MCPAdapter] = {}
 
     def register(self, adapter: "MCPAdapter") -> None:
         """Register an adapter by its name.

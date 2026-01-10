@@ -58,8 +58,10 @@ async def generate_sse_stream(
         mcp_context: list[str] = []
 
         # Determine which sources to query
-        query_books = request.source in (QuerySource.BOOKS, QuerySource.BOTH, QuerySource.ALL)
-        query_compliance = request.source in (QuerySource.COMPLIANCE, QuerySource.BOTH, QuerySource.ALL)
+        book_sources = (QuerySource.BOOKS, QuerySource.BOTH, QuerySource.ALL)
+        compliance_sources = (QuerySource.COMPLIANCE, QuerySource.BOTH, QuerySource.ALL)
+        query_books = request.source in book_sources
+        query_compliance = request.source in compliance_sources
         query_mslearn = request.source in (QuerySource.MSLEARN, QuerySource.ALL)
 
         # Query books if requested

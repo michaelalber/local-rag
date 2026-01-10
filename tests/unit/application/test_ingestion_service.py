@@ -1,12 +1,12 @@
 """Tests for book ingestion service."""
 
-import pytest
 from pathlib import Path
 from unittest.mock import AsyncMock, Mock
-from uuid import uuid4
 
-from src.services import BookIngestionService
+import pytest
+
 from src.models import Book, Chunk
+from src.services import BookIngestionService
 
 
 class TestBookIngestionService:

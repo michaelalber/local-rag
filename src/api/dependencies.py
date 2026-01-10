@@ -14,7 +14,7 @@ from fastapi import Depends
 
 from src.embeddings import OllamaEmbedder, SentenceTransformerEmbedder
 from src.llm import OllamaLLMClient
-from src.mcp import AegisMCPClient, BaseMCPClient, MCPManager, AegisAdapter, MSLearnAdapter
+from src.mcp import AegisAdapter, AegisMCPClient, BaseMCPClient, MCPManager, MSLearnAdapter
 from src.parsers import FileValidator, TextChunker, get_parser
 from src.services import BookIngestionService, QueryService, SessionManager
 from src.vectorstore import ChromaVectorStore

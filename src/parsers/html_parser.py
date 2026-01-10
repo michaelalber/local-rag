@@ -27,7 +27,7 @@ class HTMLParser(DocumentParser):
         except ImportError:
             return self._parse_without_bs4(file_path)
 
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             html_content = f.read()
 
         soup = BeautifulSoup(html_content, "html.parser")
@@ -54,7 +54,7 @@ class HTMLParser(DocumentParser):
         except ImportError:
             return self._extract_text_without_bs4(file_path)
 
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             html_content = f.read()
 
         soup = BeautifulSoup(html_content, "html.parser")
@@ -112,7 +112,7 @@ class HTMLParser(DocumentParser):
 
     def _parse_without_bs4(self, file_path: Path) -> tuple[str, str | None]:
         """Fallback parser without BeautifulSoup."""
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             html_content = f.read()
 
         # Extract title from <title> tag
@@ -123,12 +123,13 @@ class HTMLParser(DocumentParser):
 
     def _extract_text_without_bs4(self, file_path: Path) -> list[tuple[str, dict]]:
         """Fallback text extraction without BeautifulSoup."""
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             html_content = f.read()
 
         # Basic HTML tag removal
-        text = re.sub(r"<script[^>]*>.*?</script>", "", html_content, flags=re.DOTALL | re.IGNORECASE)
-        text = re.sub(r"<style[^>]*>.*?</style>", "", text, flags=re.DOTALL | re.IGNORECASE)
+        flags = re.DOTALL | re.IGNORECASE
+        text = re.sub(r"<script[^>]*>.*?</script>", "", html_content, flags=flags)
+        text = re.sub(r"<style[^>]*>.*?</style>", "", text, flags=flags)
         text = re.sub(r"<[^>]+>", " ", text)
 
         # Decode HTML entities

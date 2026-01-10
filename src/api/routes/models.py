@@ -19,7 +19,7 @@ MODEL_DESCRIPTIONS = {
     },
     "codellama": {
         "name": "Code Llama",
-        "description": "Specialized for code and programming. Best for technical/programming books.",
+        "description": "Specialized for code and programming. Best for technical books.",
         "best_for": ["Programming", "Code examples", "Technical docs", "APIs"],
         "size": "3.8GB (7b)",
     },

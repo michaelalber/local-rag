@@ -1,6 +1,5 @@
 """Tests for chat endpoint."""
 
-import pytest
 from fastapi.testclient import TestClient
 
 from src.models import LLMConnectionError

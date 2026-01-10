@@ -1,6 +1,5 @@
 """Tests for book endpoints."""
 
-import pytest
 from io import BytesIO
 from uuid import uuid4
 

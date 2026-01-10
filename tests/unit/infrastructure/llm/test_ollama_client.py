@@ -1,11 +1,11 @@
 """Unit tests for Ollama LLM client with mocks."""
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from src.models import LLMConnectionError
 from src.llm import OllamaLLMClient
+from src.models import LLMConnectionError
 
 
 class TestOllamaLLMClient:

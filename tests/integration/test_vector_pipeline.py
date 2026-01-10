@@ -5,8 +5,8 @@ from uuid import uuid4
 
 import pytest
 
-from src.models import Chunk
 from src.embeddings import SentenceTransformerEmbedder
+from src.models import Chunk
 from src.vectorstore import ChromaVectorStore
 
 

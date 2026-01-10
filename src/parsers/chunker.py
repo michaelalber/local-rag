@@ -1,14 +1,18 @@
 """Text chunking for embedding."""
 
 import re
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 
 class TextChunker:
     """Splits text into overlapping chunks for embedding, with code-aware splitting."""
 
     def __init__(
-        self, chunk_size: int = 512, overlap: int = 50, parent_chunk_size: int = 1500, children_per_parent: int = 3
+        self,
+        chunk_size: int = 512,
+        overlap: int = 50,
+        parent_chunk_size: int = 1500,
+        children_per_parent: int = 3,
     ):
         """
         Args:
@@ -45,7 +49,9 @@ class TextChunker:
 
         return sorted(code_blocks, key=lambda x: x[0])
 
-    def _is_inside_code_block(self, pos: int, code_blocks: list[tuple[int, int, str | None]]) -> bool:
+    def _is_inside_code_block(
+        self, pos: int, code_blocks: list[tuple[int, int, str | None]]
+    ) -> bool:
         """Check if position is inside a code block."""
         for start, end, _ in code_blocks:
             if start <= pos < end:
@@ -116,7 +122,8 @@ class TextChunker:
             if chunk_text:
                 # Determine if this chunk contains code
                 has_code = any(
-                    block_start < end and block_end > start for block_start, block_end, _ in code_blocks
+                    block_start < end and block_end > start
+                    for block_start, block_end, _ in code_blocks
                 )
 
                 chunk_metadata = metadata.copy()

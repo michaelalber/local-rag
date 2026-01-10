@@ -1,10 +1,9 @@
 """Tests for streaming chat endpoint."""
 
-import json
-import pytest
 from unittest.mock import AsyncMock, MagicMock
 from uuid import uuid4
 
+import pytest
 from httpx import AsyncClient
 
 from src.models import Chunk
@@ -56,7 +55,7 @@ class TestChatStreamEndpoint:
         self, app, mock_query_service_streaming
     ):
         """Test that streaming endpoint returns SSE content type."""
-        from src.api.dependencies import get_query_service, get_aegis_client
+        from src.api.dependencies import get_aegis_client, get_query_service
 
         async def override():
             return mock_query_service_streaming
@@ -83,7 +82,7 @@ class TestChatStreamEndpoint:
     @pytest.mark.asyncio
     async def test_stream_returns_start_event(self, app, mock_query_service_streaming):
         """Test that stream starts with start event."""
-        from src.api.dependencies import get_query_service, get_aegis_client
+        from src.api.dependencies import get_aegis_client, get_query_service
 
         async def override():
             return mock_query_service_streaming
@@ -112,7 +111,7 @@ class TestChatStreamEndpoint:
     @pytest.mark.asyncio
     async def test_stream_returns_sources_event(self, app, mock_query_service_streaming):
         """Test that stream includes sources event."""
-        from src.api.dependencies import get_query_service, get_aegis_client
+        from src.api.dependencies import get_aegis_client, get_query_service
 
         async def override():
             return mock_query_service_streaming
@@ -140,7 +139,7 @@ class TestChatStreamEndpoint:
     @pytest.mark.asyncio
     async def test_stream_returns_token_events(self, app, mock_query_service_streaming):
         """Test that stream includes token events."""
-        from src.api.dependencies import get_query_service, get_aegis_client
+        from src.api.dependencies import get_aegis_client, get_query_service
 
         async def override():
             return mock_query_service_streaming
@@ -168,7 +167,7 @@ class TestChatStreamEndpoint:
     @pytest.mark.asyncio
     async def test_stream_returns_done_event(self, app, mock_query_service_streaming):
         """Test that stream ends with done event."""
-        from src.api.dependencies import get_query_service, get_aegis_client
+        from src.api.dependencies import get_aegis_client, get_query_service
 
         async def override():
             return mock_query_service_streaming
@@ -197,7 +196,7 @@ class TestChatStreamEndpoint:
     @pytest.mark.asyncio
     async def test_stream_with_source_books(self, app, mock_query_service_streaming):
         """Test streaming with books source."""
-        from src.api.dependencies import get_query_service, get_aegis_client
+        from src.api.dependencies import get_aegis_client, get_query_service
 
         async def override():
             return mock_query_service_streaming
@@ -223,7 +222,7 @@ class TestChatStreamEndpoint:
     @pytest.mark.asyncio
     async def test_stream_with_source_compliance(self, app, mock_query_service_streaming):
         """Test streaming with compliance source."""
-        from src.api.dependencies import get_query_service, get_aegis_client
+        from src.api.dependencies import get_aegis_client, get_query_service
 
         async def override():
             return mock_query_service_streaming
@@ -249,7 +248,7 @@ class TestChatStreamEndpoint:
     @pytest.mark.asyncio
     async def test_stream_requires_session_id(self, app, mock_query_service_streaming):
         """Test that session-id header is required."""
-        from src.api.dependencies import get_query_service, get_aegis_client
+        from src.api.dependencies import get_aegis_client, get_query_service
 
         async def override():
             return mock_query_service_streaming
@@ -274,7 +273,7 @@ class TestChatStreamEndpoint:
     @pytest.mark.asyncio
     async def test_stream_validates_query(self, app, mock_query_service_streaming):
         """Test that empty query is rejected."""
-        from src.api.dependencies import get_query_service, get_aegis_client
+        from src.api.dependencies import get_aegis_client, get_query_service
 
         async def override():
             return mock_query_service_streaming

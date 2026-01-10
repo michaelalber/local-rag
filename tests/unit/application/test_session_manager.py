@@ -1,12 +1,13 @@
 """Tests for session manager."""
 
-import pytest
 from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
-from src.services import SessionManager
+import pytest
+
 from src.models import Book, SessionLimitError
+from src.services import SessionManager
 
 
 class TestSessionManager:

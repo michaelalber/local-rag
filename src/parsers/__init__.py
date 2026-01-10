@@ -27,7 +27,7 @@ __all__ = [
 
 # Conditional export for DoclingParser (only when docling is installed)
 try:
-    from .docling_parser import DoclingParser
+    from .docling_parser import DoclingParser  # noqa: F401
 
     __all__.append("DoclingParser")
 except ImportError:

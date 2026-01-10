@@ -22,7 +22,7 @@ class MarkdownParser(DocumentParser):
         if not file_path.exists():
             raise FileNotFoundError(f"Markdown file not found: {file_path}")
 
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             content = f.read()
 
         title = self._extract_title(content, file_path)
@@ -43,7 +43,7 @@ class MarkdownParser(DocumentParser):
         if not file_path.exists():
             raise FileNotFoundError(f"Markdown file not found: {file_path}")
 
-        with open(file_path, "r", encoding="utf-8") as f:
+        with open(file_path, encoding="utf-8") as f:
             content = f.read()
 
         # Remove YAML frontmatter if present

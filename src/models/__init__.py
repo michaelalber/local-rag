@@ -1,6 +1,6 @@
 """Domain models and exceptions."""
 
-from .book import Book, FileType, VALID_FILE_TYPES
+from .book import VALID_FILE_TYPES, Book, FileType
 from .chunk import Chunk
 from .exceptions import (
     BookChatError,

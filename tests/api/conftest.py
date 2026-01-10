@@ -1,11 +1,11 @@
 """API test fixtures."""
 
-import pytest
 from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import AsyncMock, Mock
 from uuid import uuid4
 
+import pytest
 from fastapi.testclient import TestClient
 from httpx import ASGITransport, AsyncClient
 

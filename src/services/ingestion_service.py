@@ -1,8 +1,8 @@
 """Book ingestion service."""
 
+from collections.abc import Callable
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Callable
 from uuid import uuid4
 
 from src.models import Book, Chunk, DocumentParsingError
@@ -35,7 +35,9 @@ class BookIngestionService:
         self.vector_store = vector_store
         self.validator = validator
 
-    async def ingest_book(self, file_path: Path, session_id: str, original_filename: str | None = None) -> Book:
+    async def ingest_book(
+        self, file_path: Path, session_id: str, original_filename: str | None = None
+    ) -> Book:
         """
         Ingest a book: validate, parse, chunk, embed, and store.
 
