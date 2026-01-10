@@ -12,6 +12,7 @@ class QuerySourceSchema(str, Enum):
     books = "books"
     compliance = "compliance"
     mslearn = "mslearn"
+    export_control = "export_control"
     all = "all"
     both = "both"  # Deprecated: use 'all' instead
 

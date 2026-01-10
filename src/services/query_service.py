@@ -66,6 +66,7 @@ class QueryService:
         query_books = request.source in book_sources
         query_compliance = request.source in compliance_sources
         query_mslearn = request.source in (QuerySource.MSLEARN, QuerySource.ALL)
+        query_export_control = request.source in (QuerySource.EXPORT_CONTROL, QuerySource.ALL)
 
         # Query books if requested
         if query_books:
@@ -79,6 +80,10 @@ class QueryService:
         if query_mslearn:
             mslearn_ctx = await self._retrieve_mcp_context("mslearn", request)
             mcp_context.extend(mslearn_ctx)
+
+        if query_export_control:
+            export_ctx = await self._retrieve_mcp_context("export_control", request)
+            mcp_context.extend(export_ctx)
 
         # Build combined context for LLM (use expanded context_chunks)
         enhanced_chunks = self._build_enhanced_chunks(context_chunks)

@@ -64,6 +64,7 @@ async def generate_sse_stream(
         query_books = request.source in book_sources
         query_compliance = request.source in compliance_sources
         query_mslearn = request.source in (QuerySource.MSLEARN, QuerySource.ALL)
+        query_export_control = request.source in (QuerySource.EXPORT_CONTROL, QuerySource.ALL)
 
         # Query books if requested
         if query_books:
@@ -77,6 +78,10 @@ async def generate_sse_stream(
         if query_mslearn:
             mslearn_ctx = await query_service._retrieve_mcp_context("mslearn", request)
             mcp_context.extend(mslearn_ctx)
+
+        if query_export_control:
+            export_ctx = await query_service._retrieve_mcp_context("export_control", request)
+            mcp_context.extend(export_ctx)
 
         # Event: sources (only show original search results, not expanded neighbors)
         sources_data = {
