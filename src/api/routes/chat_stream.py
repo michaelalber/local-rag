@@ -54,7 +54,8 @@ async def generate_sse_stream(
         yield format_sse_event("start", {"status": "processing"})
 
         # Collect context from selected sources
-        book_chunks: list[Chunk] = []
+        source_chunks: list[Chunk] = []  # For attribution
+        context_chunks: list[Chunk] = []  # For LLM context
         mcp_context: list[str] = []
 
         # Determine which sources to query
@@ -66,7 +67,7 @@ async def generate_sse_stream(
 
         # Query books if requested
         if query_books:
-            book_chunks = await query_service._retrieve_book_chunks(request)
+            source_chunks, context_chunks = await query_service._retrieve_book_chunks(request)
 
         # Query MCP sources if requested
         if query_compliance:
@@ -77,15 +78,15 @@ async def generate_sse_stream(
             mslearn_ctx = await query_service._retrieve_mcp_context("mslearn", request)
             mcp_context.extend(mslearn_ctx)
 
-        # Event: sources
+        # Event: sources (only show original search results, not expanded neighbors)
         sources_data = {
-            "book_sources": format_sources(book_chunks),
+            "book_sources": format_sources(source_chunks),
             "mcp_context_count": len(mcp_context),
         }
         yield format_sse_event("sources", sources_data)
 
-        # Build combined context
-        enhanced_chunks = query_service._build_enhanced_chunks(book_chunks)
+        # Build combined context (use expanded context_chunks for LLM)
+        enhanced_chunks = query_service._build_enhanced_chunks(context_chunks)
         combined_context = query_service._combine_context(enhanced_chunks, mcp_context)
 
         # Stream tokens from LLM

@@ -57,21 +57,22 @@ function isMcpSourceAvailable(name: string): boolean {
 // Check if any MCP source is available
 const anyMcpAvailable = computed(() => mcpSources.value.some(s => s.available));
 
-// Check if source selection should allow sending
-const canSendMessage = computed(() => {
-  const hasQuery = queryInput.value.trim().length > 0 && !loading.value;
-  if (!hasQuery) return false;
-
-  // For books source, require books to be uploaded
+// Check if the selected source is available (can user type?)
+const isSourceAvailable = computed(() => {
   if (selectedSource.value === 'books') {
     return props.hasBooks;
   }
-  // For specific MCP sources, check if available
   if (selectedSource.value === 'compliance' || selectedSource.value === 'mslearn' || selectedSource.value === 'export_control') {
     return isMcpSourceAvailable(selectedSource.value);
   }
-  // For 'all' or 'both', require at least one source
+  // For 'all', require at least one source
   return props.hasBooks || anyMcpAvailable.value;
+});
+
+// Check if user can send a message (has text + source available + not loading)
+const canSendMessage = computed(() => {
+  const hasQuery = queryInput.value.trim().length > 0;
+  return hasQuery && !loading.value && isSourceAvailable.value;
 });
 
 // Source options for the selector - built dynamically
@@ -447,7 +448,7 @@ function confirmClearChat() {
           v-model="queryInput"
           @keydown="handleKeyDown"
           :placeholder="placeholderText"
-          :disabled="!canSendMessage && queryInput.trim().length === 0"
+          :disabled="!isSourceAvailable || loading"
           rows="2"
           class="flex-1 px-3 py-2 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
         ></textarea>

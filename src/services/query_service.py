@@ -56,7 +56,8 @@ class QueryService:
         start_time = time.perf_counter()
 
         # Collect context from selected sources
-        book_chunks: list[Chunk] = []
+        source_chunks: list[Chunk] = []  # For attribution
+        context_chunks: list[Chunk] = []  # For LLM context
         mcp_context: list[str] = []
 
         # Determine which sources to query
@@ -68,7 +69,7 @@ class QueryService:
 
         # Query books if requested
         if query_books:
-            book_chunks = await self._retrieve_book_chunks(request)
+            source_chunks, context_chunks = await self._retrieve_book_chunks(request)
 
         # Query MCP sources if requested
         if query_compliance:
@@ -79,8 +80,8 @@ class QueryService:
             mslearn_ctx = await self._retrieve_mcp_context("mslearn", request)
             mcp_context.extend(mslearn_ctx)
 
-        # Build combined context for LLM
-        enhanced_chunks = self._build_enhanced_chunks(book_chunks)
+        # Build combined context for LLM (use expanded context_chunks)
+        enhanced_chunks = self._build_enhanced_chunks(context_chunks)
         combined_context = self._combine_context(enhanced_chunks, mcp_context)
 
         # Generate answer with conversation history
@@ -95,12 +96,20 @@ class QueryService:
 
         return QueryResponse(
             answer=answer,
-            sources=book_chunks,
+            sources=source_chunks,
             latency_ms=elapsed_ms,
         )
 
-    async def _retrieve_book_chunks(self, request: QueryRequest) -> list[Chunk]:
-        """Retrieve relevant chunks from book vector store."""
+    async def _retrieve_book_chunks(
+        self, request: QueryRequest
+    ) -> tuple[list[Chunk], list[Chunk]]:
+        """Retrieve relevant chunks from book vector store.
+
+        Returns:
+            Tuple of (source_chunks, context_chunks) where:
+            - source_chunks: Original search results for attribution
+            - context_chunks: Expanded chunks with neighbors for LLM context
+        """
         # Calculate Top K based on percentage if provided
         if request.retrieval_percentage is not None:
             collection_size = await self.vector_store.get_collection_size(request.session_id)
@@ -116,22 +125,23 @@ class QueryService:
         # Embed the query
         query_embedding = self.embedder.embed_query(request.query)
 
-        # Retrieve relevant chunks
-        chunks = await self.vector_store.search(
+        # Retrieve relevant chunks (these are the sources for attribution)
+        source_chunks = await self.vector_store.search(
             query_embedding=query_embedding,
             collection_id=request.session_id,
             top_k=top_k,
         )
 
-        # Fetch neighboring chunks for contextual retrieval
+        # Fetch neighboring chunks for contextual retrieval (for LLM context only)
+        context_chunks = source_chunks
         if self.neighbor_window > 0:
-            chunks = await self.vector_store.get_neighbor_chunks(
-                chunks=chunks,
+            context_chunks = await self.vector_store.get_neighbor_chunks(
+                chunks=source_chunks,
                 collection_id=request.session_id,
                 window=self.neighbor_window,
             )
 
-        return chunks
+        return source_chunks, context_chunks
 
     async def _retrieve_mcp_context(
         self, source: str, request: QueryRequest
