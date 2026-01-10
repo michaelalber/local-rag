@@ -1,6 +1,7 @@
 # KnowledgeHub
 
 ![CI](https://github.com/michaelalber/local-rag/actions/workflows/ci.yml/badge.svg?branch=main)
+![Security](https://github.com/michaelalber/local-rag/actions/workflows/security.yml/badge.svg?branch=main)
 
 A privacy-focused, local-first RAG (Retrieval-Augmented Generation) application for chatting with your documents and external knowledge sources using a local LLM. Upload PDFs, eBooks, Markdown, or text files and ask questions - all processing happens on your machine.
 
