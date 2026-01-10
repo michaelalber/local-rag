@@ -8,7 +8,10 @@ A privacy-focused, local-first RAG (Retrieval-Augmented Generation) application 
 
 - 📚 **Multi-Book Support**: Upload up to 5 books per session (PDF/EPUB/MD/TXT/RST/HTML, up to 100MB each)
 - 📄 **Enhanced Parsing**: Optional [Docling](https://github.com/DS4SD/docling) integration for better PDF parsing and Office document support (DOCX/PPTX/XLSX)
-- 🔒 **Privacy First**: All data stays local - no cloud services or external APIs
+- 🔌 **MCP Integration**: Connect to external knowledge sources via [Model Context Protocol](https://modelcontextprotocol.io/)
+  - **Aegis MCP**: Security compliance frameworks (NIST 800-53, OWASP, DOE)
+  - **Microsoft Learn MCP**: Microsoft documentation and training content
+- 🔒 **Privacy First**: All data stays local - no cloud services or external APIs (MCP sources optional)
 - 💬 **Interactive Chat**: Ask questions and get answers with source citations
 - 🎯 **Source Attribution**: See exactly which book passages informed each answer
 - 🤖 **Model Switcher**: Choose the best Ollama model for your content type
@@ -27,6 +30,7 @@ A privacy-focused, local-first RAG (Retrieval-Augmented Generation) application 
 - **ChromaDB** - Vector database for embeddings
 - **Ollama** - Local LLM inference and embeddings
 - **sentence-transformers** - Alternative CPU-based embeddings
+- **MCP SDK** - Model Context Protocol for external knowledge sources
 - **pypdf** & **EbookLib** - PDF/EPUB parsing
 - **Docling** (optional) - Enhanced PDF parsing, Office docs, OCR
 - **Markdown, HTML, RST, TXT** - Text format support
@@ -183,6 +187,7 @@ local-rag/
 │   ├── embeddings/      # Ollama, SentenceTransformer
 │   ├── vectorstore/     # ChromaDB
 │   ├── llm/             # Ollama client + prompt builder
+│   ├── mcp/             # MCP client, adapters (Aegis, MSLearn), manager
 │   ├── services/        # Ingestion, Query, Session
 │   └── api/             # FastAPI (routes/, schemas/, middleware/)
 ├── tests/               # Mirrors src/ structure
@@ -223,14 +228,26 @@ black src/ tests/
 
 ## API Endpoints
 
-- `GET /api/health` - Health check
+- `GET /api/health` - Health check (includes MCP source status)
 - `POST /api/books` - Upload books
 - `GET /api/books` - List books in session
 - `DELETE /api/books/{book_id}` - Delete a book
 - `DELETE /api/books` - Clear session
 - `POST /api/chat` - Send a query
+- `POST /api/chat/stream` - Stream chat responses (SSE)
 
 All endpoints require a `session-id` header for session isolation.
+
+### Query Sources
+
+When sending a chat query, you can specify which knowledge source to use:
+
+| Source | Description |
+|--------|-------------|
+| `books` | Search only your uploaded books (default) |
+| `compliance` | Search Aegis MCP (NIST, OWASP, DOE frameworks) |
+| `mslearn` | Search Microsoft Learn documentation |
+| `all` | Search all available sources |
 
 ## Ollama & Models
 
@@ -308,6 +325,15 @@ NEIGHBOR_WINDOW=1
 
 # Enhanced Parsing (requires pip install -e ".[enhanced]")
 USE_DOCLING_PARSER=false
+
+# MCP Integration (optional)
+# Aegis MCP - Security compliance frameworks
+AEGIS_MCP_TRANSPORT=http              # 'http' or 'stdio'
+AEGIS_MCP_URL=http://localhost:8765/mcp
+
+# Microsoft Learn MCP
+MSLEARN_MCP_ENABLED=true
+MSLEARN_MCP_URL=https://learn.microsoft.com/api/mcp
 ```
 
 ## Enhanced Parsing with Docling
@@ -360,6 +386,77 @@ USE_DOCLING_PARSER=true
 - **Better quality**: Significantly improved results for complex PDFs with tables, figures, and structured content
 
 **Note:** Changing `EMBEDDING_MODEL` requires clearing ChromaDB (`rm -rf ./data/chroma/*`) and re-uploading books.
+
+## MCP Integration
+
+LocalBookChat supports the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) to connect to external knowledge sources alongside your local books.
+
+### Available MCP Sources
+
+| Source | Description | Configuration |
+|--------|-------------|---------------|
+| **Aegis MCP** | Security compliance (NIST 800-53, OWASP, DOE) | Requires local Aegis server |
+| **Microsoft Learn** | Microsoft documentation and training | Public endpoint, no setup needed |
+
+### Enabling Microsoft Learn
+
+Microsoft Learn MCP provides access to Microsoft's documentation. To enable:
+
+```bash
+export MSLEARN_MCP_ENABLED=true
+```
+
+Or add to `.env`:
+```env
+MSLEARN_MCP_ENABLED=true
+```
+
+The frontend will automatically show "MS Learn" as a source option.
+
+### Enabling Aegis MCP
+
+Aegis MCP provides security compliance frameworks. You'll need to run an Aegis MCP server:
+
+```bash
+# HTTP transport (recommended)
+export AEGIS_MCP_TRANSPORT=http
+export AEGIS_MCP_URL=http://localhost:8765/mcp
+
+# Or stdio transport
+export AEGIS_MCP_TRANSPORT=stdio
+export AEGIS_MCP_COMMAND=aegis-mcp
+```
+
+### How It Works
+
+1. **Source Selection**: Choose your knowledge source in the chat interface (Books, Compliance, MS Learn, or All)
+2. **Health Check**: The `/api/health` endpoint reports which MCP sources are available
+3. **Combined Queries**: Select "All" to search books and all configured MCP sources together
+4. **Streaming**: All sources support real-time streaming responses
+
+### Architecture
+
+```
+┌─────────────────────────────────────────┐
+│              QueryService               │
+│  Routes queries based on source         │
+└─────────────────┬───────────────────────┘
+                  │
+┌─────────────────▼───────────────────────┐
+│              MCPManager                 │
+│  Registers and routes to adapters       │
+└────────┬─────────────────┬──────────────┘
+         │                 │
+┌────────▼────────┐ ┌──────▼───────┐
+│  AegisAdapter   │ │MSLearnAdapter│
+│  (compliance)   │ │  (mslearn)   │
+└────────┬────────┘ └──────┬───────┘
+         │                 │
+┌────────▼─────────────────▼──────────────┐
+│            BaseMCPClient                │
+│  Handles stdio/HTTP transport           │
+└─────────────────────────────────────────┘
+```
 
 ## Security Considerations
 
@@ -424,6 +521,13 @@ USE_DOCLING_PARSER=true
 - Enable GPU acceleration in Ollama
 - Consider reducing NEIGHBOR_WINDOW in config
 
+**MCP Source Not Available**:
+- Check `/api/health` endpoint for MCP source status
+- Verify environment variables are set correctly
+- For Aegis: ensure the MCP server is running
+- For MS Learn: check network connectivity
+- Review backend logs for MCP connection errors
+
 ## License
 
 MIT License - see [LICENSE](LICENSE) file for details
@@ -438,3 +542,4 @@ This is a personal/educational project, but suggestions and feedback are welcome
 - Powered by [Ollama](https://ollama.ai)
 - Vector storage by [ChromaDB](https://www.trychroma.com/)
 - Embeddings by [sentence-transformers](https://www.sbert.net/)
+- External knowledge via [Model Context Protocol](https://modelcontextprotocol.io/)
