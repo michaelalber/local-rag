@@ -2,7 +2,9 @@
 
 ![CI](https://github.com/michaelalber/local-rag/actions/workflows/ci.yml/badge.svg?branch=main)
 
-A privacy-focused, local-first RAG (Retrieval-Augmented Generation) application that lets you chat with your eBooks using a local LLM. Upload PDF, EPUB, Markdown, or text files and ask questions - all processing happens on your machine with no external API calls.
+A privacy-focused, local-first RAG (Retrieval-Augmented Generation) application that lets you chat with your eBooks and external knowledge sources using a local LLM. Upload PDF, EPUB, Markdown, or text files and ask questions - all processing happens on your machine.
+
+Optionally connect to external knowledge via [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) servers like Microsoft Learn or security compliance frameworks (NIST, OWASP, DOE).
 
 ## Features
 
