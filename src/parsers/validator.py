@@ -9,12 +9,31 @@ from src.models import FileSizeLimitError, UnsupportedFileTypeError
 class FileValidator:
     """Validates uploaded files for security and compatibility."""
 
-    ALLOWED_EXTENSIONS = {".pdf", ".epub", ".md", ".txt", ".rst", ".html", ".htm"}
+    ALLOWED_EXTENSIONS = {
+        # Text formats
+        ".md", ".txt", ".rst", ".html", ".htm",
+        # eBook formats
+        ".pdf", ".epub",
+        # Office formats (requires docling)
+        ".docx", ".pptx", ".xlsx",
+        # Image formats (requires docling for OCR)
+        ".png", ".jpg", ".jpeg", ".tiff", ".tif",
+    }
 
     # Magic bytes for binary file detection
     MAGIC_BYTES = {
         ".pdf": b"%PDF",
         ".epub": b"PK",  # EPUB is a ZIP file
+        # Office Open XML formats are ZIP-based
+        ".docx": b"PK",
+        ".pptx": b"PK",
+        ".xlsx": b"PK",
+        # Image formats
+        ".png": b"\x89PNG",
+        ".jpg": b"\xff\xd8\xff",
+        ".jpeg": b"\xff\xd8\xff",
+        ".tiff": b"II",  # Little-endian TIFF (most common)
+        ".tif": b"II",
     }
 
     # Text file extensions (validated by encoding, not magic bytes)
@@ -98,7 +117,7 @@ class FileValidator:
         # Text files: verify they're valid UTF-8
         if ext in self.TEXT_EXTENSIONS:
             try:
-                with open(file_path, "r", encoding="utf-8") as f:
+                with open(file_path, encoding="utf-8") as f:
                     f.read(1024)  # Read first 1KB to check encoding
             except UnicodeDecodeError:
                 raise UnsupportedFileTypeError(

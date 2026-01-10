@@ -3,7 +3,7 @@
 from .base import DocumentParser
 from .chunker import TextChunker
 from .epub_parser import EpubParser
-from .factory import get_parser
+from .factory import DOCLING_EXTENSIONS, get_parser
 from .html_parser import HTMLParser
 from .markdown_parser import MarkdownParser
 from .pdf_parser import PdfParser
@@ -22,4 +22,13 @@ __all__ = [
     "ReStructuredTextParser",
     "HTMLParser",
     "get_parser",
+    "DOCLING_EXTENSIONS",
 ]
+
+# Conditional export for DoclingParser (only when docling is installed)
+try:
+    from .docling_parser import DoclingParser
+
+    __all__.append("DoclingParser")
+except ImportError:
+    pass

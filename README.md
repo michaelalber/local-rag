@@ -5,6 +5,7 @@ A privacy-focused, local-first RAG (Retrieval-Augmented Generation) application 
 ## Features
 
 - 📚 **Multi-Book Support**: Upload up to 5 books per session (PDF/EPUB/MD/TXT/RST/HTML, up to 100MB each)
+- 📄 **Enhanced Parsing**: Optional [Docling](https://github.com/DS4SD/docling) integration for better PDF parsing and Office document support (DOCX/PPTX/XLSX)
 - 🔒 **Privacy First**: All data stays local - no cloud services or external APIs
 - 💬 **Interactive Chat**: Ask questions and get answers with source citations
 - 🎯 **Source Attribution**: See exactly which book passages informed each answer
@@ -25,6 +26,7 @@ A privacy-focused, local-first RAG (Retrieval-Augmented Generation) application 
 - **Ollama** - Local LLM inference and embeddings
 - **sentence-transformers** - Alternative CPU-based embeddings
 - **pypdf** & **EbookLib** - PDF/EPUB parsing
+- **Docling** (optional) - Enhanced PDF parsing, Office docs, OCR
 - **Markdown, HTML, RST, TXT** - Text format support
 
 ### Frontend
@@ -65,6 +67,9 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
 # Install dependencies
 pip install -e ".[dev]"
+
+# Optional: Install enhanced parsing (adds ~2GB for Docling + dependencies)
+pip install -e ".[enhanced]"
 ```
 
 ### 3. Frontend Setup
@@ -157,7 +162,7 @@ npm run dev
 
 ### Using the Application
 
-1. **Upload Books**: Drag and drop files (PDF, EPUB, MD, TXT, RST, HTML - max 100MB each, up to 5 books)
+1. **Upload Books**: Drag and drop files (PDF, EPUB, MD, TXT, RST, HTML - max 100MB each, up to 5 books). With enhanced parsing enabled: also DOCX, PPTX, XLSX, and images (PNG/JPG/TIFF with OCR).
 2. **Select Model**: Click the model selector to choose the best LLM for your content
 3. **Ask Questions**: Type your question in the chat interface
 4. **View Sources**: Click on source citations to see the exact passages used
@@ -298,14 +303,66 @@ OLLAMA_BASE_URL=http://localhost:11434
 # RAG Settings
 TOP_K_CHUNKS=5
 NEIGHBOR_WINDOW=1
+
+# Enhanced Parsing (requires pip install -e ".[enhanced]")
+USE_DOCLING_PARSER=false
 ```
+
+## Enhanced Parsing with Docling
+
+For better document parsing quality and additional format support, you can enable [Docling](https://github.com/DS4SD/docling):
+
+### Installation
+
+```bash
+pip install -e ".[enhanced]"
+```
+
+### Enable Docling
+
+```bash
+export USE_DOCLING_PARSER=true
+```
+
+Or add to your `.env` file:
+```env
+USE_DOCLING_PARSER=true
+```
+
+### What Docling Adds
+
+| Feature | Standard | With Docling |
+|---------|----------|--------------|
+| **PDF parsing** | Basic text extraction | Structure-aware with headings, tables |
+| **Table extraction** | Often garbled | High-accuracy preservation |
+| **Chunking** | Character-based | Token-based, semantic boundaries |
+| **DOCX support** | Not available | Full support |
+| **PPTX support** | Not available | Full support |
+| **XLSX support** | Not available | Full support |
+| **Image OCR** | Not available | PNG, JPG, TIFF with text extraction |
+
+### Supported Formats
+
+**Standard (always available):**
+- PDF, EPUB, Markdown, TXT, RST, HTML
+
+**With Docling enabled:**
+- All standard formats (PDF uses enhanced parsing)
+- Microsoft Office: DOCX, PPTX, XLSX
+- Images with OCR: PNG, JPG, JPEG, TIFF
+
+### Trade-offs
+
+- **Slower processing**: Docling performs deeper analysis (first upload only)
+- **Larger install**: Adds ~2GB for PyTorch and model dependencies
+- **Better quality**: Significantly improved results for complex PDFs with tables, figures, and structured content
 
 **Note:** Changing `EMBEDDING_MODEL` requires clearing ChromaDB (`rm -rf ./data/chroma/*`) and re-uploading books.
 
 ## Security Considerations
 
-- File type validation (PDF, EPUB, MD, TXT, RST, HTML)
-- MIME type verification via magic bytes (PDF: `%PDF`, EPUB: `PK`) or UTF-8 validation (text files)
+- File type validation (PDF, EPUB, MD, TXT, RST, HTML; with Docling: DOCX, PPTX, XLSX, PNG, JPG, TIFF)
+- MIME type verification via magic bytes (PDF: `%PDF`, EPUB/Office: `PK`, images: format headers) or UTF-8 validation (text files)
 - File size limits (100MB default, configurable)
 - Filename sanitization (path traversal prevention, special chars removed)
 - Upload directory isolation

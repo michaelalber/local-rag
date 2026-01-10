@@ -1,6 +1,6 @@
 """Domain models and exceptions."""
 
-from .book import Book
+from .book import Book, FileType, VALID_FILE_TYPES
 from .chunk import Chunk
 from .exceptions import (
     BookChatError,
@@ -15,6 +15,8 @@ from .query import QueryRequest, QueryResponse
 
 __all__ = [
     "Book",
+    "FileType",
+    "VALID_FILE_TYPES",
     "Chunk",
     "QueryRequest",
     "QueryResponse",

@@ -27,6 +27,9 @@ dev = [
     "black>=24.0.0",
     "fpdf2>=2.7.0",
 ]
+enhanced = [
+    "docling>=2.0.0",
+]
 security = [
     "bandit>=1.7.5",  # Security linting
     "safety>=2.3.5",  # Dependency vulnerability scanning
