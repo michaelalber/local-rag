@@ -130,22 +130,43 @@ async function scrollToBottom() {
   }
 }
 
+// Retry helper with exponential backoff
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 3,
+  baseDelay: number = 500
+): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err;
+      if (attempt < maxRetries - 1) {
+        const delay = baseDelay * Math.pow(2, attempt);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  throw lastError;
+}
+
 onMounted(async () => {
-  // Fetch available models
+  // Fetch available models with retry
   try {
-    const response = await getModels();
+    const response = await withRetry(() => getModels());
     availableModels.value = response.models;
     defaultModel.value = response.default;
   } catch (err) {
-    console.error('Failed to fetch models:', err);
+    console.error('Failed to fetch models after retries:', err);
   }
 
-  // Fetch MCP sources from health check
+  // Fetch MCP sources from health check with retry
   try {
-    const health = await healthCheck();
+    const health = await withRetry(() => healthCheck());
     mcpSources.value = health.mcp_sources || [];
   } catch (err) {
-    console.error('Failed to check health:', err);
+    console.error('Failed to check health after retries:', err);
     mcpSources.value = [];
   }
 });
