@@ -85,6 +85,13 @@ Three pillars: **TDD**, **Security by Design**, **YAGNI**
 - Specific exceptions, never bare `except:`
 - Async for I/O-bound operations
 
+## Quality Gates
+
+- **Cyclomatic Complexity**: Methods <10, classes <20
+- **Code Coverage**: 80% minimum for business logic, 95% for security-critical code
+- **Maintainability Index**: Target 70+
+- **Code Duplication**: Maximum 3%
+
 ## Security Requirements (OWASP)
 
 All implementations must follow these security principles:
