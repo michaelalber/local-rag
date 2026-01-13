@@ -51,6 +51,7 @@ ollama pull mxbai-embed-large     # Embeddings
 # Lint
 ruff check src/ tests/
 black src/ tests/
+bandit -r src/ -c pyproject.toml  # Security linting
 ```
 
 ## Development Principles
