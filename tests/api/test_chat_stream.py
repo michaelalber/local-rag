@@ -17,8 +17,8 @@ class TestChatStreamEndpoint:
         """Create mock query service with streaming support."""
         service = MagicMock()
 
-        # Mock _retrieve_book_chunks
-        service._retrieve_book_chunks = AsyncMock(return_value=[
+        # Mock _retrieve_book_chunks - returns (source_chunks, context_chunks)
+        mock_chunks = [
             Chunk(
                 id=uuid4(),
                 book_id=uuid4(),
@@ -26,7 +26,8 @@ class TestChatStreamEndpoint:
                 page_number=1,
                 chapter="Chapter 1",
             )
-        ])
+        ]
+        service._retrieve_book_chunks = AsyncMock(return_value=(mock_chunks, mock_chunks))
 
         # Mock _retrieve_compliance_context
         service._retrieve_compliance_context = AsyncMock(return_value=[])

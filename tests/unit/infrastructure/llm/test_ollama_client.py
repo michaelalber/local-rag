@@ -23,7 +23,7 @@ class TestOllamaLLMClient:
     def client(self, mock_ollama_client) -> OllamaLLMClient:
         """Create OllamaLLMClient with mocked dependencies."""
         return OllamaLLMClient(
-            model="mistral:7b-instruct-q4_K_M", base_url="http://localhost:11434"
+            model="qwen3:8b", base_url="http://localhost:11434"
         )
 
     @pytest.mark.asyncio
@@ -48,7 +48,7 @@ class TestOllamaLLMClient:
 
         # Verify the call structure
         call_args = mock_ollama_client.chat.call_args
-        assert call_args.kwargs["model"] == "mistral:7b-instruct-q4_K_M"
+        assert call_args.kwargs["model"] == "qwen3:8b"
         assert "messages" in call_args.kwargs
         assert len(call_args.kwargs["messages"]) > 0
 
@@ -90,7 +90,7 @@ class TestOllamaLLMClient:
         """Test successful health check."""
         # Mock the list response to indicate server is available
         mock_ollama_client.list.return_value = {
-            "models": [{"name": "mistral:7b-instruct-q4_K_M"}]
+            "models": [{"name": "qwen3:8b"}]
         }
 
         is_healthy = await client.health_check()
