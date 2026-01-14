@@ -37,7 +37,8 @@ class OllamaEmbedder:
 
     def _embed_single(self, text: str) -> list[float]:
         """Generate embedding for a single text."""
-        with httpx.Client(timeout=60.0) as client:
+        # Longer timeout to handle model loading on first request
+        with httpx.Client(timeout=300.0) as client:
             response = client.post(
                 f"{self.base_url}/api/embeddings",
                 json={"model": self.model_name, "prompt": text},
