@@ -40,7 +40,7 @@ const availableModels = ref<OllamaModel[]>([]);
 const selectedModel = ref<string | null>(
   sessionStorage.getItem('selectedModel') || null
 );
-const defaultModel = ref<string>('mistral:7b-instruct-q4_K_M');
+const defaultModel = ref<string>('gemma3:12b');
 
 // Source selection - dynamic from health check
 const selectedSource = ref<QuerySource>(
