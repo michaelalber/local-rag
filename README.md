@@ -120,7 +120,7 @@ ollama serve
 **Recommended Setup:**
 ```bash
 # LLM Model - Best for RAG chat
-ollama pull deepseek-r1:14b
+ollama pull gemma3:12b
 
 # Embedding Model - High quality semantic search
 ollama pull mxbai-embed-large
@@ -261,18 +261,18 @@ For the best RAG experience, we recommend:
 
 | Component | Model | Size | Why |
 |-----------|-------|------|-----|
-| **LLM** | `deepseek-r1:14b` | 9GB | Excellent reasoning and context understanding |
+| **LLM** | `gemma3:12b` | 8.1GB | Excellent reasoning and context understanding |
 | **Embeddings** | `mxbai-embed-large` | 669MB | High-quality 1024-dim embeddings |
 
 ### LLM Models for RAG
 
 | Model | Size | Best For | Notes |
 |-------|------|----------|-------|
-| **deepseek-r1:14b** | 9GB | General RAG (recommended) | Excellent reasoning, great with technical content |
+| **gemma3:12b** | 8.1GB | General RAG (recommended) | Excellent reasoning, great with technical content |
 | **llama3.1:8b** | 4.9GB | Balanced option | Great instruction following, good with context |
 | **mistral:7b-instruct** | 4.4GB | Fast responses | Good quality, faster inference |
 | **codellama:7b** | 3.8GB | Technical/code books | Specialized for programming content |
-| **gemma3:12b** | 8.1GB | Higher quality | Better answers, slower, needs more VRAM |
+| **deepseek-r1:14b** | 9GB | Alternative | Deep reasoning, good with technical content |
 
 ### Embedding Models
 
@@ -291,7 +291,7 @@ For the best RAG experience, we recommend:
 ollama list
 
 # Pull a model
-ollama pull deepseek-r1:14b
+ollama pull gemma3:12b
 
 # Remove a model
 ollama rm <model-name>
@@ -320,7 +320,7 @@ CHUNK_OVERLAP=50
 
 # Models (recommended settings)
 EMBEDDING_MODEL=mxbai-embed-large
-LLM_MODEL=deepseek-r1:14b
+LLM_MODEL=gemma3:12b
 OLLAMA_BASE_URL=http://localhost:11434
 
 # RAG Settings
@@ -500,7 +500,7 @@ The frontend will automatically show "Export Control" as a source option when co
 
 - **GPU Acceleration**: Ollama will use GPU if available (significantly faster)
 - **Model Selection**:
-  - `deepseek-r1:14b`: Recommended for RAG, excellent reasoning
+  - `gemma3:12b`: Recommended for RAG, excellent reasoning
   - `llama3.1:8b`: Good balance of speed and quality
   - `mistral:7b-instruct`: Fastest inference
 - **Retrieval Percentage**:

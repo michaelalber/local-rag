@@ -30,7 +30,7 @@ class Settings(BaseSettings):
 
     # Models
     embedding_model: str = "all-MiniLM-L6-v2"
-    llm_model: str = "deepseek-r1:14b"
+    llm_model: str = "gemma3:12b"
     ollama_base_url: str = "http://localhost:11434"
 
     # RAG
