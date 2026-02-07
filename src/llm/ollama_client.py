@@ -16,7 +16,7 @@ class OllamaLLMClient:
     """LLM client using Ollama for local inference."""
 
     def __init__(
-        self, model: str = "qwen3:8b", base_url: str = "http://localhost:11434"
+        self, model: str = "qwen3:14b", base_url: str = "http://localhost:11434"
     ):
         """
         Args:

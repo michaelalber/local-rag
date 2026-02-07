@@ -39,7 +39,7 @@ async def upload_books(
         ext = Path(raw_name).suffix.lower()
         if ext not in ALLOWED_EXTENSIONS:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
+                status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
                 detail=f"Unsupported file type: {ext}",
             )
         # Use validated literal suffix from allowlist (breaks taint chain)
