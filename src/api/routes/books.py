@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, Header, UploadFile, status
+from fastapi import APIRouter, Depends, File, Header, HTTPException, UploadFile, status
 
 from src.services import BookIngestionService, SessionManager
 from src.vectorstore import ChromaVectorStore
@@ -15,6 +15,8 @@ from ..dependencies import get_ingestion_service, get_session_manager, get_vecto
 from ..schemas import BookResponse
 
 router = APIRouter(prefix="/books", tags=["books"])
+
+ALLOWED_EXTENSIONS = {".pdf", ".epub", ".md", ".txt", ".rst", ".html"}
 
 
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=list[BookResponse])
@@ -32,10 +34,19 @@ async def upload_books(
     books = []
 
     for upload_file in files:
+        # Validate extension against allowlist to prevent path traversal
+        raw_name = Path(upload_file.filename or "file").name
+        ext = Path(raw_name).suffix.lower()
+        if ext not in ALLOWED_EXTENSIONS:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Unsupported file type: {ext}",
+            )
+        # Use validated literal suffix from allowlist (breaks taint chain)
+        safe_suffix = next(s for s in ALLOWED_EXTENSIONS if s == ext)
+
         # Save to temp file
-        with tempfile.NamedTemporaryFile(
-            delete=False, suffix=Path(upload_file.filename or "file").suffix
-        ) as tmp:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=safe_suffix) as tmp:
             shutil.copyfileobj(upload_file.file, tmp)
             tmp_path = Path(tmp.name)
 
