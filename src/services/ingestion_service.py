@@ -94,7 +94,7 @@ class BookIngestionService:
 
         # Create Chunk entities with hierarchical fields
         chunks = []
-        for chunk_data, embedding in zip(all_chunks_data, embeddings):
+        for chunk_data, embedding in zip(all_chunks_data, embeddings, strict=True):
             metadata = chunk_data["metadata"]
             chunk = Chunk(
                 id=uuid4(),

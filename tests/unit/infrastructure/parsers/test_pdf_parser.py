@@ -3,7 +3,6 @@
 from pathlib import Path
 
 import pytest
-
 from src.parsers import PdfParser
 
 
@@ -29,7 +28,7 @@ class TestPdfParser:
             pytest.skip("Sample PDF not available")
 
         pages = parser.extract_text(sample_pdf)
-        for text, metadata in pages:
+        for _text, metadata in pages:
             assert "page_number" in metadata
             assert isinstance(metadata["page_number"], int)
 

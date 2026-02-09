@@ -3,7 +3,6 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-
 from src.mcp.aegis_client import AegisMCPClient
 from src.mcp.models import ComplianceSearchResult, ControlDetail
 

@@ -12,17 +12,17 @@ from .text_parser import TextParser
 from .validator import FileValidator
 
 __all__ = [
-    "DocumentParser",
-    "FileValidator",
-    "TextChunker",
-    "PdfParser",
-    "EpubParser",
-    "MarkdownParser",
-    "TextParser",
-    "ReStructuredTextParser",
-    "HTMLParser",
-    "get_parser",
     "DOCLING_EXTENSIONS",
+    "DocumentParser",
+    "EpubParser",
+    "FileValidator",
+    "HTMLParser",
+    "MarkdownParser",
+    "PdfParser",
+    "ReStructuredTextParser",
+    "TextChunker",
+    "TextParser",
+    "get_parser",
 ]
 
 # Conditional export for DoclingParser (only when docling is installed)

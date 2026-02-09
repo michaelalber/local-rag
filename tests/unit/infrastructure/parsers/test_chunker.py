@@ -1,7 +1,6 @@
 """Tests for text chunking."""
 
 import pytest
-
 from src.parsers import TextChunker
 
 

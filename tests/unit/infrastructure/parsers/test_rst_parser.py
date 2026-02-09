@@ -3,7 +3,6 @@
 from pathlib import Path
 
 import pytest
-
 from src.parsers import ReStructuredTextParser
 
 
@@ -22,10 +21,10 @@ class TestReStructuredTextParser:
 Some content here.
 """)
 
-        title, author = parser.parse(test_file)
+        title, _author = parser.parse(test_file)
 
         assert title == "My Document Title"
-        assert author is None
+        assert _author is None
 
     def test_parse_extracts_title_from_overline_heading(
         self, parser: ReStructuredTextParser, tmp_path: Path
@@ -38,7 +37,7 @@ My Document Title
 Some content here.
 """)
 
-        title, author = parser.parse(test_file)
+        title, _author = parser.parse(test_file)
 
         assert title == "My Document Title"
 
@@ -54,7 +53,7 @@ Title
 Content here.
 """)
 
-        title, author = parser.parse(test_file)
+        _title, author = parser.parse(test_file)
 
         assert author == "John Doe"
 
@@ -64,7 +63,7 @@ Content here.
         test_file = tmp_path / "my_notes.rst"
         test_file.write_text("Just some text without a heading.")
 
-        title, author = parser.parse(test_file)
+        title, _author = parser.parse(test_file)
 
         assert title == "my_notes"
 

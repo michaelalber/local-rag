@@ -4,7 +4,6 @@ from pathlib import Path
 from unittest.mock import AsyncMock, Mock
 
 import pytest
-
 from src.models import Book, Chunk
 from src.services import BookIngestionService
 
@@ -36,7 +35,7 @@ class TestBookIngestionService:
     @pytest.fixture
     def mock_embedder(self):
         embedder = Mock()
-        embedder.embed.return_value = [[0.1] * 384, [0.2] * 384]
+        embedder.embed.side_effect = lambda texts: [[0.1] * 384 for _ in texts]
         return embedder
 
     @pytest.fixture
@@ -127,5 +126,5 @@ class TestBookIngestionService:
 
         book = await service.ingest_book(file_path=test_file, session_id="s1")
 
-        # 2 pages × 2 chunks each
+        # 2 pages x 2 chunks each
         assert book.chunk_count == 4

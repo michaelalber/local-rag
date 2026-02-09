@@ -4,7 +4,6 @@ from pathlib import Path
 from uuid import uuid4
 
 import pytest
-
 from src.embeddings import SentenceTransformerEmbedder
 from src.models import Chunk
 from src.vectorstore import ChromaVectorStore
@@ -37,7 +36,7 @@ class TestVectorPipeline:
         # Create chunks with real embeddings
         chunks = []
         embeddings = embedder.embed(texts)
-        for i, (text, emb) in enumerate(zip(texts, embeddings)):
+        for i, (text, emb) in enumerate(zip(texts, embeddings, strict=True)):
             chunks.append(
                 Chunk(
                     id=uuid4(),

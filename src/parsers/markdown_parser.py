@@ -58,7 +58,7 @@ class MarkdownParser(DocumentParser):
         results = []
         current_section = "Introduction"
 
-        for i, part in enumerate(sections):
+        for _i, part in enumerate(sections):
             if re.match(r"^#{1,6}\s+", part):
                 # This is a heading
                 current_section = re.sub(r"^#{1,6}\s+", "", part).strip()

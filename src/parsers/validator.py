@@ -2,6 +2,7 @@
 
 import re
 from pathlib import Path
+from typing import ClassVar
 
 from src.models import FileSizeLimitError, UnsupportedFileTypeError
 
@@ -9,7 +10,7 @@ from src.models import FileSizeLimitError, UnsupportedFileTypeError
 class FileValidator:
     """Validates uploaded files for security and compatibility."""
 
-    ALLOWED_EXTENSIONS = {
+    ALLOWED_EXTENSIONS: ClassVar[set[str]] = {
         # Text formats
         ".md", ".txt", ".rst", ".html", ".htm",
         # eBook formats
@@ -21,7 +22,7 @@ class FileValidator:
     }
 
     # Magic bytes for binary file detection
-    MAGIC_BYTES = {
+    MAGIC_BYTES: ClassVar[dict[str, bytes]] = {
         ".pdf": b"%PDF",
         ".epub": b"PK",  # EPUB is a ZIP file
         # Office Open XML formats are ZIP-based
@@ -37,7 +38,7 @@ class FileValidator:
     }
 
     # Text file extensions (validated by encoding, not magic bytes)
-    TEXT_EXTENSIONS = {".md", ".txt", ".rst", ".html", ".htm"}
+    TEXT_EXTENSIONS: ClassVar[set[str]] = {".md", ".txt", ".rst", ".html", ".htm"}
 
     def __init__(self, max_size_mb: int = 50):
         self.max_size_bytes = max_size_mb * 1024 * 1024
@@ -122,7 +123,7 @@ class FileValidator:
             except UnicodeDecodeError:
                 raise UnsupportedFileTypeError(
                     f"File {file_path.name} is not valid UTF-8 text"
-                )
+                ) from None
             return
 
         # Binary files: check magic bytes

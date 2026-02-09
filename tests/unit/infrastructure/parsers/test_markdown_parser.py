@@ -3,7 +3,6 @@
 from pathlib import Path
 
 import pytest
-
 from src.parsers import MarkdownParser
 
 
@@ -41,7 +40,7 @@ Content here.
         test_file = tmp_path / "my_notes.md"
         test_file.write_text("Just some text without a heading.")
 
-        title, author = parser.parse(test_file)
+        title, _author = parser.parse(test_file)
 
         assert title == "my_notes"
 

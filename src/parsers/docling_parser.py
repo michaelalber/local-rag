@@ -57,7 +57,7 @@ class DoclingParser(DocumentParser):
             raise FileNotFoundError(f"Document not found: {file_path}")
 
         self._ensure_docling()
-        assert self._converter is not None  # Set by _ensure_docling  # nosec B101
+        assert self._converter is not None  # Set by _ensure_docling  # nosec B101  # noqa: S101
         result = self._converter.convert(file_path)
         doc = result.document
 
@@ -88,8 +88,8 @@ class DoclingParser(DocumentParser):
             raise FileNotFoundError(f"Document not found: {file_path}")
 
         self._ensure_docling()
-        assert self._converter is not None  # Set by _ensure_docling  # nosec B101
-        assert self._chunker is not None  # Set by _ensure_docling  # nosec B101
+        assert self._converter is not None  # Set by _ensure_docling  # nosec B101  # noqa: S101
+        assert self._chunker is not None  # Set by _ensure_docling  # nosec B101  # noqa: S101
         result = self._converter.convert(file_path)
         doc = result.document
 

@@ -64,3 +64,5 @@ data/uploads/*
 data/chroma/*
 !data/**/.gitkeep
 *.pid
+logs/
+uv.lock

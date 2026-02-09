@@ -10,16 +10,13 @@ from .manager import MCPManager
 from .models import ComplianceSearchResult, ControlDetail
 
 __all__ = [
-    # New architecture
-    "BaseMCPClient",
-    "MCPManager",
-    "MCPAdapter",
     "AegisAdapter",
-    "ExportControlAdapter",
-    "MSLearnAdapter",
-    # Models
+    "AegisMCPClient",
+    "BaseMCPClient",
     "ComplianceSearchResult",
     "ControlDetail",
-    # Legacy (deprecated)
-    "AegisMCPClient",
+    "ExportControlAdapter",
+    "MCPAdapter",
+    "MCPManager",
+    "MSLearnAdapter",
 ]

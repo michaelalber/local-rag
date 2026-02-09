@@ -95,10 +95,10 @@ async def list_models(
         raise HTTPException(
             status_code=503,
             detail="Service temporarily unavailable. Is Ollama running?",
-        )
+        ) from None
     except Exception:
         # Log full error details internally but return generic message
         raise HTTPException(
             status_code=500,
             detail="An error occurred while listing models.",
-        )
+        ) from None

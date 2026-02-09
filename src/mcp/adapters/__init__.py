@@ -5,4 +5,4 @@ from .base import MCPAdapter
 from .export_control import ExportControlAdapter
 from .mslearn import MSLearnAdapter
 
-__all__ = ["MCPAdapter", "AegisAdapter", "ExportControlAdapter", "MSLearnAdapter"]
+__all__ = ["AegisAdapter", "ExportControlAdapter", "MCPAdapter", "MSLearnAdapter"]

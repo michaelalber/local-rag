@@ -8,7 +8,6 @@ from uuid import uuid4
 import pytest
 from fastapi.testclient import TestClient
 from httpx import ASGITransport, AsyncClient
-
 from src.api.dependencies import (
     get_aegis_client,
     get_ingestion_service,

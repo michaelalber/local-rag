@@ -5,7 +5,6 @@ from uuid import uuid4
 
 import pytest
 from httpx import AsyncClient
-
 from src.models import Chunk
 
 
@@ -37,7 +36,7 @@ class TestChatStreamEndpoint:
 
         # Mock _combine_context
         service._combine_context = MagicMock(
-            side_effect=lambda chunks, compliance: chunks if not compliance else compliance
+            side_effect=lambda chunks, compliance: compliance if compliance else chunks
         )
 
         # Mock llm_client.generate_stream to yield tokens

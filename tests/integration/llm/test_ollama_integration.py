@@ -6,7 +6,6 @@ Run: ollama pull qwen3:8b
 """
 
 import pytest
-
 from src.llm import OllamaLLMClient
 from src.models import LLMConnectionError
 

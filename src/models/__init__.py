@@ -14,18 +14,18 @@ from .exceptions import (
 from .query import QueryRequest, QueryResponse, QuerySource
 
 __all__ = [
-    "Book",
-    "FileType",
     "VALID_FILE_TYPES",
+    "Book",
+    "BookChatError",
+    "BookNotFoundError",
     "Chunk",
+    "DocumentParsingError",
+    "FileSizeLimitError",
+    "FileType",
+    "LLMConnectionError",
     "QueryRequest",
     "QueryResponse",
     "QuerySource",
-    "BookChatError",
-    "UnsupportedFileTypeError",
-    "FileSizeLimitError",
-    "DocumentParsingError",
     "SessionLimitError",
-    "BookNotFoundError",
-    "LLMConnectionError",
+    "UnsupportedFileTypeError",
 ]

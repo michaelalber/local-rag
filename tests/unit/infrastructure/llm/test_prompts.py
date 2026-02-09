@@ -3,7 +3,6 @@
 from uuid import uuid4
 
 import pytest
-
 from src.llm import RAGPromptBuilder
 from src.models import Chunk
 

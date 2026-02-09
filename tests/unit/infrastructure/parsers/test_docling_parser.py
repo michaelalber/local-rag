@@ -107,7 +107,7 @@ class TestDoclingParserWithMocks:
         from src.parsers.docling_parser import DoclingParser
 
         parser = DoclingParser()
-        title, author = parser.parse(sample_pdf)
+        title, _author = parser.parse(sample_pdf)
 
         assert title == "My Document Title"
 

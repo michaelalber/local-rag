@@ -53,10 +53,7 @@ class TextChunker:
         self, pos: int, code_blocks: list[tuple[int, int, str | None]]
     ) -> bool:
         """Check if position is inside a code block."""
-        for start, end, _ in code_blocks:
-            if start <= pos < end:
-                return True
-        return False
+        return any(start <= pos < end for start, end, _ in code_blocks)
 
     def chunk(self, text: str, metadata: dict) -> list[dict]:
         """

@@ -3,7 +3,6 @@
 from unittest.mock import AsyncMock, patch
 
 import pytest
-
 from src.llm import OllamaLLMClient
 from src.models import LLMConnectionError
 

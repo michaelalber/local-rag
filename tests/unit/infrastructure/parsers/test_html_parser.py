@@ -3,7 +3,6 @@
 from pathlib import Path
 
 import pytest
-
 from src.parsers import HTMLParser
 
 
@@ -21,7 +20,7 @@ class TestHTMLParser:
 </html>
 """)
 
-        title, author = parser.parse(test_file)
+        title, _author = parser.parse(test_file)
 
         assert title == "My Page Title"
 
@@ -37,7 +36,7 @@ class TestHTMLParser:
 </html>
 """)
 
-        title, author = parser.parse(test_file)
+        _title, author = parser.parse(test_file)
 
         assert author == "Jane Smith"
 
@@ -51,7 +50,7 @@ class TestHTMLParser:
 </html>
 """)
 
-        title, author = parser.parse(test_file)
+        title, _author = parser.parse(test_file)
 
         assert title == "Main Heading"
 
@@ -59,7 +58,7 @@ class TestHTMLParser:
         test_file = tmp_path / "my_page.html"
         test_file.write_text("<p>Just some content.</p>")
 
-        title, author = parser.parse(test_file)
+        title, _author = parser.parse(test_file)
 
         assert title == "my_page"
 

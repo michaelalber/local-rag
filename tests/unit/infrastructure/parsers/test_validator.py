@@ -3,7 +3,6 @@
 from pathlib import Path
 
 import pytest
-
 from src.models import FileSizeLimitError, UnsupportedFileTypeError
 from src.parsers import FileValidator
 
