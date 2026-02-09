@@ -51,6 +51,7 @@ ollama pull mxbai-embed-large     # Embeddings
 # Lint
 ruff check src/ tests/
 black src/ tests/
+mypy src/                         # Type checking
 bandit -r src/ -c pyproject.toml  # Security linting
 ```
 
@@ -92,6 +93,38 @@ Three pillars: **TDD**, **Security by Design**, **YAGNI**
 - **Code Coverage**: 80% minimum for business logic, 95% for security-critical code
 - **Maintainability Index**: Target 70+
 - **Code Duplication**: Maximum 3%
+
+## Git Workflow
+
+- Commit after each GREEN phase
+- Commit message format: `feat|fix|test|refactor: brief description`
+- Don't commit failing tests (RED phase is local only)
+
+## Testing Patterns
+
+```python
+# Arrange-Act-Assert pattern
+def test_chunker_splits_on_paragraph_boundary():
+    # Arrange
+    text = "First paragraph.\n\nSecond paragraph."
+    chunker = Chunker(max_size=20)
+
+    # Act
+    chunks = chunker.chunk(text)
+
+    # Assert
+    assert len(chunks) == 2
+    assert chunks[0].text == "First paragraph."
+```
+
+```python
+# Integration test with fixtures
+@pytest.mark.asyncio
+async def test_upload_pdf_returns_book_metadata(client, sample_pdf):
+    response = await client.post("/api/upload", files={"file": sample_pdf})
+    assert response.status_code == 201
+    assert response.json()["title"] is not None
+```
 
 ## Security Requirements (OWASP)
 
