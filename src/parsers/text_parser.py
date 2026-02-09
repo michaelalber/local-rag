@@ -1,6 +1,7 @@
 """Plain text document parser."""
 
 from pathlib import Path
+from typing import Any
 
 from .base import DocumentParser
 
@@ -25,7 +26,7 @@ class TextParser(DocumentParser):
         title = file_path.stem
         return title, None
 
-    def extract_text(self, file_path: Path) -> list[tuple[str, dict]]:
+    def extract_text(self, file_path: Path) -> list[tuple[str, dict[str, Any]]]:
         """
         Extract text from plain text file.
 

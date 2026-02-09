@@ -29,8 +29,7 @@ async def chat(
     conversation_history = None
     if chat_request.history:
         conversation_history = [
-            {"role": msg.role, "content": msg.content}
-            for msg in chat_request.history
+            {"role": msg.role, "content": msg.content} for msg in chat_request.history
         ]
 
     # Map schema enum to domain enum

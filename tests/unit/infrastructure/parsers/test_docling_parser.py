@@ -60,9 +60,7 @@ class TestDoclingParserWithMocks:
             "sys.modules",
             {
                 "docling": MagicMock(),
-                "docling.document_converter": MagicMock(
-                    DocumentConverter=mock_converter_class
-                ),
+                "docling.document_converter": MagicMock(DocumentConverter=mock_converter_class),
                 "docling.chunking": MagicMock(HybridChunker=mock_chunker_class),
             },
         ):
@@ -111,9 +109,7 @@ class TestDoclingParserWithMocks:
 
         assert title == "My Document Title"
 
-    def test_extract_text_returns_segments_with_metadata(
-        self, mock_docling, sample_pdf: Path
-    ):
+    def test_extract_text_returns_segments_with_metadata(self, mock_docling, sample_pdf: Path):
         """Extract text should return segments with page numbers and sections."""
         # Setup mock chunks
         mock_chunk1 = MagicMock()

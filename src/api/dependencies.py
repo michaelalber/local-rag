@@ -154,7 +154,7 @@ async def get_mcp_manager() -> MCPManager:
     """Get MCP manager (lazily initialized on first request)."""
     global _mcp_manager, _mcp_manager_initialized
 
-    if _mcp_manager_initialized:
+    if _mcp_manager_initialized and _mcp_manager is not None:
         return _mcp_manager
 
     _mcp_manager = _create_mcp_manager()

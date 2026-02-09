@@ -99,6 +99,17 @@ warn_return_any = true
 warn_unused_configs = true
 exclude = ["tests", ".venv"]
 
+[[tool.mypy.overrides]]
+module = [
+    "docling.*",
+    "ebooklib.*",
+    "ollama.*",
+    "sentence_transformers.*",
+    "chromadb.*",
+    "bs4.*",
+]
+ignore_missing_imports = true
+
 [tool.bandit]
 exclude_dirs = ["tests", ".venv"]
 

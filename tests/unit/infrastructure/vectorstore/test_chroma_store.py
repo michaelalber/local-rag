@@ -58,9 +58,7 @@ class TestChromaVectorStore:
         assert all(isinstance(c, Chunk) for c in results)
 
     @pytest.mark.asyncio
-    async def test_collection_exists(
-        self, store: ChromaVectorStore, sample_chunks: list[Chunk]
-    ):
+    async def test_collection_exists(self, store: ChromaVectorStore, sample_chunks: list[Chunk]):
         collection_id = "existence-test"
 
         assert not await store.collection_exists(collection_id)
@@ -70,9 +68,7 @@ class TestChromaVectorStore:
         assert await store.collection_exists(collection_id)
 
     @pytest.mark.asyncio
-    async def test_delete_collection(
-        self, store: ChromaVectorStore, sample_chunks: list[Chunk]
-    ):
+    async def test_delete_collection(self, store: ChromaVectorStore, sample_chunks: list[Chunk]):
         collection_id = "delete-test"
 
         await store.add_chunks(sample_chunks, collection_id)

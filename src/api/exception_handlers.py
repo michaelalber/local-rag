@@ -18,9 +18,7 @@ from src.models import (
 logger = logging.getLogger(__name__)
 
 
-async def book_chat_error_handler(
-    request: Request, exc: BookChatError
-) -> JSONResponse:
+async def book_chat_error_handler(request: Request, exc: BookChatError) -> JSONResponse:
     """Handle application-specific errors."""
     status_map = {
         UnsupportedFileTypeError: 415,

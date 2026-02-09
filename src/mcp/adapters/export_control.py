@@ -38,10 +38,13 @@ class ExportControlAdapter(MCPAdapter):
 
         try:
             # Try regulation search first
-            result = await self.client.call_tool("search_regulations", {
-                "query": query,
-                "top_k": top_k,
-            })
+            result = await self.client.call_tool(
+                "search_regulations",
+                {
+                    "query": query,
+                    "top_k": top_k,
+                },
+            )
             return self._format_results(result)
         except Exception as e:
             logger.error("Failed to search export regulations: %s", e)
@@ -56,7 +59,7 @@ class ExportControlAdapter(MCPAdapter):
         Returns:
             List of formatted context strings
         """
-        context_strings = []
+        context_strings: list[str] = []
 
         if not result or not result.content:
             return context_strings
@@ -80,7 +83,7 @@ class ExportControlAdapter(MCPAdapter):
 
         return context_strings
 
-    def _format_entry(self, entry: dict) -> str:
+    def _format_entry(self, entry: dict[str, Any]) -> str:
         """Format a single entry as a context string.
 
         Args:

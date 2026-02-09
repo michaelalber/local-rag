@@ -36,8 +36,14 @@ def _get_docling_parser() -> type[DocumentParser]:
 
 # Extensions that require docling
 DOCLING_EXTENSIONS = {
-    ".docx", ".pptx", ".xlsx",
-    ".png", ".jpg", ".jpeg", ".tiff", ".tif",
+    ".docx",
+    ".pptx",
+    ".xlsx",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".tiff",
+    ".tif",
 }
 
 

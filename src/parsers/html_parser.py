@@ -2,6 +2,7 @@
 
 import re
 from pathlib import Path
+from typing import Any
 
 from .base import DocumentParser
 
@@ -36,7 +37,7 @@ class HTMLParser(DocumentParser):
 
         return title, author
 
-    def extract_text(self, file_path: Path) -> list[tuple[str, dict]]:
+    def extract_text(self, file_path: Path) -> list[tuple[str, dict[str, Any]]]:
         """
         Extract text from HTML file.
 
@@ -65,31 +66,31 @@ class HTMLParser(DocumentParser):
 
         return [(content, {"section": "content"})]
 
-    def _extract_title_bs4(self, soup, file_path: Path) -> str:
+    def _extract_title_bs4(self, soup: Any, file_path: Path) -> str:
         """Extract title from HTML using BeautifulSoup."""
         # Try <title> tag first
         title_tag = soup.find("title")
         if title_tag and title_tag.string:
-            return title_tag.string.strip()
+            return str(title_tag.string.strip())
 
         # Try first <h1>
         h1_tag = soup.find("h1")
         if h1_tag:
-            return h1_tag.get_text().strip()
+            return str(h1_tag.get_text().strip())
 
         # Fallback to filename
         return file_path.stem
 
-    def _extract_author_bs4(self, soup) -> str | None:
+    def _extract_author_bs4(self, soup: Any) -> str | None:
         """Extract author from HTML meta tags."""
         # Look for meta author tag
         author_meta = soup.find("meta", attrs={"name": "author"})
         if author_meta and author_meta.get("content"):
-            return author_meta.get("content").strip()
+            return str(author_meta.get("content").strip())
 
         return None
 
-    def _extract_content_bs4(self, soup) -> str:
+    def _extract_content_bs4(self, soup: Any) -> str:
         """Extract text content from HTML, preserving code blocks."""
         # Remove script and style elements
         for script in soup(["script", "style", "nav", "footer"]):
@@ -121,7 +122,7 @@ class HTMLParser(DocumentParser):
 
         return title, None
 
-    def _extract_text_without_bs4(self, file_path: Path) -> list[tuple[str, dict]]:
+    def _extract_text_without_bs4(self, file_path: Path) -> list[tuple[str, dict[str, Any]]]:
         """Fallback text extraction without BeautifulSoup."""
         with open(file_path, encoding="utf-8") as f:
             html_content = f.read()

@@ -82,9 +82,7 @@ class TestQueryService:
         mock_embedder.embed_query.assert_called_once_with("My question?")
 
     @pytest.mark.asyncio
-    async def test_query_searches_correct_session(
-        self, service: QueryService, mock_vector_store
-    ):
+    async def test_query_searches_correct_session(self, service: QueryService, mock_vector_store):
         request = QueryRequest(query="Q?", session_id="specific-session")
 
         await service.query(request)
@@ -93,9 +91,7 @@ class TestQueryService:
         assert call_args.kwargs["collection_id"] == "specific-session"
 
     @pytest.mark.asyncio
-    async def test_query_respects_top_k(
-        self, service: QueryService, mock_vector_store
-    ):
+    async def test_query_respects_top_k(self, service: QueryService, mock_vector_store):
         request = QueryRequest(query="Q?", session_id="s1", top_k=3)
 
         await service.query(request)

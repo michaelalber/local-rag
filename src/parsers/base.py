@@ -2,6 +2,7 @@
 
 from abc import ABC, abstractmethod
 from pathlib import Path
+from typing import Any
 
 
 class DocumentParser(ABC):
@@ -18,7 +19,7 @@ class DocumentParser(ABC):
         pass
 
     @abstractmethod
-    def extract_text(self, file_path: Path) -> list[tuple[str, dict]]:
+    def extract_text(self, file_path: Path) -> list[tuple[str, dict[str, Any]]]:
         """
         Extract text with metadata.
 

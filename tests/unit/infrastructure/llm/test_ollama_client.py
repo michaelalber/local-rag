@@ -21,14 +21,10 @@ class TestOllamaLLMClient:
     @pytest.fixture
     def client(self, mock_ollama_client) -> OllamaLLMClient:
         """Create OllamaLLMClient with mocked dependencies."""
-        return OllamaLLMClient(
-            model="qwen3:8b", base_url="http://localhost:11434"
-        )
+        return OllamaLLMClient(model="qwen3:8b", base_url="http://localhost:11434")
 
     @pytest.mark.asyncio
-    async def test_generate_success(
-        self, client: OllamaLLMClient, mock_ollama_client: AsyncMock
-    ):
+    async def test_generate_success(self, client: OllamaLLMClient, mock_ollama_client: AsyncMock):
         """Test successful text generation."""
         # Mock the chat response
         mock_response = {
@@ -78,9 +74,9 @@ class TestOllamaLLMClient:
         with pytest.raises(LLMConnectionError) as exc_info:
             await client.generate(prompt="test", context=["context"])
 
-        assert "connection" in str(exc_info.value).lower() or "ollama" in str(
-            exc_info.value
-        ).lower()
+        assert (
+            "connection" in str(exc_info.value).lower() or "ollama" in str(exc_info.value).lower()
+        )
 
     @pytest.mark.asyncio
     async def test_health_check_success(
@@ -88,9 +84,7 @@ class TestOllamaLLMClient:
     ):
         """Test successful health check."""
         # Mock the list response to indicate server is available
-        mock_ollama_client.list.return_value = {
-            "models": [{"name": "qwen3:8b"}]
-        }
+        mock_ollama_client.list.return_value = {"models": [{"name": "qwen3:8b"}]}
 
         is_healthy = await client.health_check()
 
@@ -144,13 +138,9 @@ class TestOllamaLLMClient:
         assert call_args.kwargs.get("stream", False) is False
 
     @pytest.mark.asyncio
-    async def test_client_initialization_with_custom_url(
-        self, mock_ollama_client: AsyncMock
-    ):
+    async def test_client_initialization_with_custom_url(self, mock_ollama_client: AsyncMock):
         """Test client can be initialized with custom base URL."""
-        client = OllamaLLMClient(
-            model="llama2:7b", base_url="http://custom-host:8080"
-        )
+        client = OllamaLLMClient(model="llama2:7b", base_url="http://custom-host:8080")
 
         # The client should be created (no exception)
         assert client is not None

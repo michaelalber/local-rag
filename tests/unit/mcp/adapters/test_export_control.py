@@ -42,9 +42,7 @@ class TestExportControlAdapterSearchContext:
         return ExportControlAdapter(mock_client)
 
     @pytest.mark.asyncio
-    async def test_search_context_returns_formatted_results(
-        self, adapter, mock_client
-    ):
+    async def test_search_context_returns_formatted_results(self, adapter, mock_client):
         """Test search_context returns formatted context strings."""
         # Mock MCP response
         mock_content = MagicMock()
@@ -72,18 +70,16 @@ class TestExportControlAdapterSearchContext:
         )
 
     @pytest.mark.asyncio
-    async def test_search_context_handles_multiple_results(
-        self, adapter, mock_client
-    ):
+    async def test_search_context_handles_multiple_results(self, adapter, mock_client):
         """Test search_context handles multiple results."""
         mock_content = MagicMock()
         mock_content.text = (
-            '['
+            "["
             '{"id": "EAR-734.2", "type": "Regulation", "title": "Item 1", '
             '"description": "Description 1", "source": "EAR"},'
             '{"id": "ITAR-120.1", "type": "Regulation", "title": "Item 2", '
             '"description": "Description 2", "source": "ITAR"}'
-            ']'
+            "]"
         )
 
         mock_result = MagicMock()
@@ -108,9 +104,7 @@ class TestExportControlAdapterSearchContext:
         mock_client.call_tool.assert_not_called()
 
     @pytest.mark.asyncio
-    async def test_search_context_returns_empty_on_error(
-        self, adapter, mock_client
-    ):
+    async def test_search_context_returns_empty_on_error(self, adapter, mock_client):
         """Test search_context returns empty list on error."""
         mock_client.call_tool.side_effect = Exception("MCP error")
 
@@ -119,9 +113,7 @@ class TestExportControlAdapterSearchContext:
         assert results == []
 
     @pytest.mark.asyncio
-    async def test_search_context_handles_empty_response(
-        self, adapter, mock_client
-    ):
+    async def test_search_context_handles_empty_response(self, adapter, mock_client):
         """Test search_context handles empty response."""
         mock_result = MagicMock()
         mock_result.content = []
@@ -132,9 +124,7 @@ class TestExportControlAdapterSearchContext:
         assert results == []
 
     @pytest.mark.asyncio
-    async def test_search_context_handles_null_response(
-        self, adapter, mock_client
-    ):
+    async def test_search_context_handles_null_response(self, adapter, mock_client):
         """Test search_context handles null response."""
         mock_client.call_tool.return_value = None
 

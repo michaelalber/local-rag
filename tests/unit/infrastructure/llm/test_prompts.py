@@ -42,9 +42,7 @@ class TestRAGPromptBuilder:
             ),
         ]
 
-    def test_build_prompt_with_context(
-        self, builder: RAGPromptBuilder, sample_chunks: list[Chunk]
-    ):
+    def test_build_prompt_with_context(self, builder: RAGPromptBuilder, sample_chunks: list[Chunk]):
         """Test prompt generation with context chunks."""
         query = "What is Python?"
         prompt = builder.build_prompt(query=query, context_chunks=sample_chunks)
@@ -113,9 +111,7 @@ class TestRAGPromptBuilder:
         # Assuming ~4 chars per token, keep under ~8000 tokens
         assert len(prompt) < 32000
 
-    def test_build_prompt_handles_chunks_without_metadata(
-        self, builder: RAGPromptBuilder
-    ):
+    def test_build_prompt_handles_chunks_without_metadata(self, builder: RAGPromptBuilder):
         """Test handling chunks with minimal metadata."""
         chunks = [
             Chunk(

@@ -2,6 +2,7 @@
 
 import logging
 from pathlib import Path
+from typing import Any, cast
 from uuid import UUID
 
 import chromadb
@@ -39,9 +40,9 @@ class ChromaVectorStore:
 
         # Prepare data for ChromaDB
         ids = [str(c.id) for c in chunks]
-        embeddings = [c.embedding for c in chunks if c.embedding]
+        embeddings: list[list[float]] = [c.embedding for c in chunks if c.embedding]
         documents = [c.content for c in chunks]
-        metadatas = [
+        metadatas: list[dict[str, str | int | float | bool]] = [
             {
                 "book_id": str(c.book_id),
                 "page_number": c.page_number or -1,
@@ -71,9 +72,9 @@ class ChromaVectorStore:
 
             collection.add(
                 ids=batch_ids,
-                embeddings=batch_embeddings,
+                embeddings=batch_embeddings,  # type: ignore[arg-type]
                 documents=batch_documents,
-                metadatas=batch_metadatas,
+                metadatas=batch_metadatas,  # type: ignore[arg-type]
             )
 
             if total_chunks > batch_size:
@@ -110,37 +111,38 @@ class ChromaVectorStore:
         collection = self.client.get_collection(collection_name)
 
         results = collection.query(
-            query_embeddings=[query_embedding],
+            query_embeddings=[query_embedding],  # type: ignore[arg-type]
             n_results=top_k,
-            include=["documents", "metadatas", "embeddings"],
+            include=cast(Any, ["documents", "metadatas", "embeddings"]),
         )
 
         # Convert results to Chunk entities
         chunks = []
         if results["ids"] and results["ids"][0]:
             for i, chunk_id in enumerate(results["ids"][0]):
-                metadata = results["metadatas"][0][i] if results["metadatas"] else {}
+                metadata = dict(results["metadatas"][0][i] if results["metadatas"] else {})
 
+                page_num = metadata.get("page_number", -1)
                 chunk = Chunk(
                     id=UUID(chunk_id),
                     book_id=UUID(
-                        metadata.get("book_id", "00000000-0000-0000-0000-000000000000")
+                        str(metadata.get("book_id", "00000000-0000-0000-0000-000000000000"))
                     ),
                     content=results["documents"][0][i] if results["documents"] else "",
-                    page_number=metadata.get("page_number")
-                    if metadata.get("page_number", -1) != -1
+                    page_number=int(page_num) if page_num != -1 else None,
+                    chapter=str(metadata.get("chapter")) or None,
+                    embedding=list(results["embeddings"][0][i])
+                    if results.get("embeddings") and results["embeddings"]
                     else None,
-                    chapter=metadata.get("chapter") or None,
-                    embedding=results["embeddings"][0][i] if results.get("embeddings") else None,
-                    has_code=metadata.get("has_code", False),
-                    code_language=metadata.get("code_language") or None,
-                    sequence_number=metadata.get("sequence_number", 0),
+                    has_code=bool(metadata.get("has_code", False)),
+                    code_language=str(metadata.get("code_language")) or None,
+                    sequence_number=int(metadata.get("sequence_number", 0)),
                     parent_chunk_id=(
-                        UUID(metadata["parent_chunk_id"])
+                        UUID(str(metadata["parent_chunk_id"]))
                         if metadata.get("parent_chunk_id")
                         else None
                     ),
-                    parent_content=metadata.get("parent_content") or None,
+                    parent_content=str(metadata.get("parent_content")) or None,
                 )
                 chunks.append(chunk)
 
@@ -206,7 +208,7 @@ class ChromaVectorStore:
         collection = self.client.get_collection(collection_name)
 
         # Build set of sequence numbers to fetch for each book
-        chunks_to_fetch = {}  # book_id -> set of sequence numbers
+        chunks_to_fetch: dict[str, set[int]] = {}  # book_id -> set of sequence numbers
 
         for chunk in chunks:
             book_id_str = str(chunk.book_id)
@@ -228,38 +230,37 @@ class ChromaVectorStore:
             try:
                 results = collection.get(
                     where={"book_id": book_id_str},
-                    include=["documents", "metadatas", "embeddings"],
+                    include=cast(Any, ["documents", "metadatas", "embeddings"]),
                 )
 
                 if results["ids"]:
                     for i, chunk_id in enumerate(results["ids"]):
-                        metadata = results["metadatas"][i] if results["metadatas"] else {}
-                        chunk_seq = metadata.get("sequence_number", 0)
+                        metadata = dict(results["metadatas"][i] if results["metadatas"] else {})
+                        chunk_seq = int(metadata.get("sequence_number", 0))
 
                         # Only include chunks in our target sequence range
                         if chunk_seq in seq_numbers:
                             # Check for embeddings safely
-                            embedding = None
-                            has_embeddings = results.get("embeddings") is not None
-                            if has_embeddings and i < len(results["embeddings"]):
-                                embedding = results["embeddings"][i]
+                            embedding: list[float] | None = None
+                            raw_embeddings = results.get("embeddings")
+                            if raw_embeddings is not None and i < len(raw_embeddings):
+                                embedding = list(raw_embeddings[i])
 
+                            page_num = metadata.get("page_number", -1)
                             chunk = Chunk(
                                 id=UUID(chunk_id),
                                 book_id=UUID(book_id_str),
                                 content=results["documents"][i] if results["documents"] else "",
-                                page_number=metadata.get("page_number")
-                                if metadata.get("page_number", -1) != -1
-                                else None,
-                                chapter=metadata.get("chapter") or None,
+                                page_number=int(page_num) if page_num != -1 else None,
+                                chapter=str(metadata.get("chapter")) or None,
                                 embedding=embedding,
-                                has_code=metadata.get("has_code", False),
-                                code_language=metadata.get("code_language") or None,
+                                has_code=bool(metadata.get("has_code", False)),
+                                code_language=str(metadata.get("code_language")) or None,
                                 sequence_number=chunk_seq,
-                                parent_chunk_id=UUID(metadata["parent_chunk_id"])
+                                parent_chunk_id=UUID(str(metadata["parent_chunk_id"]))
                                 if metadata.get("parent_chunk_id")
                                 else None,
-                                parent_content=metadata.get("parent_content") or None,
+                                parent_content=str(metadata.get("parent_content")) or None,
                             )
                             all_chunks.append(chunk)
 

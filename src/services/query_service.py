@@ -6,6 +6,7 @@ import logging
 import time
 from typing import TYPE_CHECKING
 
+from src.embeddings import OllamaEmbedder, SentenceTransformerEmbedder
 from src.llm import OllamaLLMClient
 from src.models import Chunk, QueryRequest, QueryResponse, QuerySource
 from src.vectorstore import ChromaVectorStore
@@ -22,7 +23,7 @@ class QueryService:
     def __init__(
         self,
         vector_store: ChromaVectorStore,
-        embedder,  # OllamaEmbedder or SentenceTransformerEmbedder
+        embedder: OllamaEmbedder | SentenceTransformerEmbedder,
         llm_client: OllamaLLMClient,
         neighbor_window: int = 1,
         mcp_manager: MCPManager | None = None,
@@ -105,9 +106,7 @@ class QueryService:
             latency_ms=elapsed_ms,
         )
 
-    async def _retrieve_book_chunks(
-        self, request: QueryRequest
-    ) -> tuple[list[Chunk], list[Chunk]]:
+    async def _retrieve_book_chunks(self, request: QueryRequest) -> tuple[list[Chunk], list[Chunk]]:
         """Retrieve relevant chunks from book vector store.
 
         Returns:
@@ -148,9 +147,7 @@ class QueryService:
 
         return source_chunks, context_chunks
 
-    async def _retrieve_mcp_context(
-        self, source: str, request: QueryRequest
-    ) -> list[str]:
+    async def _retrieve_mcp_context(self, source: str, request: QueryRequest) -> list[str]:
         """Retrieve context from an MCP source.
 
         Args:

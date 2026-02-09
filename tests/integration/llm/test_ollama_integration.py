@@ -18,9 +18,7 @@ class TestOllamaIntegration:
     @pytest.fixture
     def client(self) -> OllamaLLMClient:
         """Create client pointing to local Ollama."""
-        return OllamaLLMClient(
-            model="qwen3:8b", base_url="http://localhost:11434"
-        )
+        return OllamaLLMClient(model="qwen3:8b", base_url="http://localhost:11434")
 
     @pytest.mark.asyncio
     async def test_health_check_with_running_server(self, client: OllamaLLMClient):
@@ -64,9 +62,7 @@ class TestOllamaIntegration:
         if not is_healthy:
             pytest.skip("Ollama server not available")
 
-        response = await client.generate(
-            prompt="What is the capital of France?", context=[]
-        )
+        response = await client.generate(prompt="What is the capital of France?", context=[])
 
         # Should still generate a response
         assert response

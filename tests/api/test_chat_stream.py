@@ -51,9 +51,7 @@ class TestChatStreamEndpoint:
         return service
 
     @pytest.mark.asyncio
-    async def test_stream_returns_sse_content_type(
-        self, app, mock_query_service_streaming
-    ):
+    async def test_stream_returns_sse_content_type(self, app, mock_query_service_streaming):
         """Test that streaming endpoint returns SSE content type."""
         from src.api.dependencies import get_aegis_client, get_query_service
 
@@ -67,9 +65,8 @@ class TestChatStreamEndpoint:
         app.dependency_overrides[get_aegis_client] = override_aegis
 
         from httpx import ASGITransport
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
+
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.post(
                 "/api/chat/stream",
                 json={"query": "What is access control?"},
@@ -94,9 +91,8 @@ class TestChatStreamEndpoint:
         app.dependency_overrides[get_aegis_client] = override_aegis
 
         from httpx import ASGITransport
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
+
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.post(
                 "/api/chat/stream",
                 json={"query": "What is access control?"},
@@ -123,9 +119,8 @@ class TestChatStreamEndpoint:
         app.dependency_overrides[get_aegis_client] = override_aegis
 
         from httpx import ASGITransport
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
+
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.post(
                 "/api/chat/stream",
                 json={"query": "What is access control?"},
@@ -151,9 +146,8 @@ class TestChatStreamEndpoint:
         app.dependency_overrides[get_aegis_client] = override_aegis
 
         from httpx import ASGITransport
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
+
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.post(
                 "/api/chat/stream",
                 json={"query": "What is access control?"},
@@ -179,9 +173,8 @@ class TestChatStreamEndpoint:
         app.dependency_overrides[get_aegis_client] = override_aegis
 
         from httpx import ASGITransport
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
+
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.post(
                 "/api/chat/stream",
                 json={"query": "What is access control?"},
@@ -208,9 +201,8 @@ class TestChatStreamEndpoint:
         app.dependency_overrides[get_aegis_client] = override_aegis
 
         from httpx import ASGITransport
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
+
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.post(
                 "/api/chat/stream",
                 json={"query": "What is in chapter 1?", "source": "books"},
@@ -234,9 +226,8 @@ class TestChatStreamEndpoint:
         app.dependency_overrides[get_aegis_client] = override_aegis
 
         from httpx import ASGITransport
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
+
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.post(
                 "/api/chat/stream",
                 json={"query": "NIST password requirements?", "source": "compliance"},
@@ -260,9 +251,8 @@ class TestChatStreamEndpoint:
         app.dependency_overrides[get_aegis_client] = override_aegis
 
         from httpx import ASGITransport
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
+
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.post(
                 "/api/chat/stream",
                 json={"query": "Test question?"},
@@ -285,9 +275,8 @@ class TestChatStreamEndpoint:
         app.dependency_overrides[get_aegis_client] = override_aegis
 
         from httpx import ASGITransport
-        async with AsyncClient(
-            transport=ASGITransport(app=app), base_url="http://test"
-        ) as client:
+
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
             response = await client.post(
                 "/api/chat/stream",
                 json={"query": ""},

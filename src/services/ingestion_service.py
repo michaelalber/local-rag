@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
+from src.embeddings import OllamaEmbedder, SentenceTransformerEmbedder
 from src.models import Book, Chunk, DocumentParsingError
 from src.parsers import DocumentParser, FileValidator, TextChunker
 from src.vectorstore import ChromaVectorStore
@@ -17,7 +18,7 @@ class BookIngestionService:
         self,
         parser_factory: Callable[[Path], DocumentParser],
         chunker: TextChunker,
-        embedder,  # OllamaEmbedder or SentenceTransformerEmbedder
+        embedder: OllamaEmbedder | SentenceTransformerEmbedder,
         vector_store: ChromaVectorStore,
         validator: FileValidator,
     ):
@@ -62,9 +63,7 @@ class BookIngestionService:
             title, author = parser.parse(file_path)
             text_segments = parser.extract_text(file_path)
         except Exception as e:
-            raise DocumentParsingError(
-                f"Failed to parse document: {e}"
-            ) from e
+            raise DocumentParsingError(f"Failed to parse document: {e}") from e
 
         # Use original filename as title fallback if title looks like a temp file
         if original_filename and (not title or title.startswith("tmp") or len(title) < 3):

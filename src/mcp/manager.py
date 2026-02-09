@@ -1,7 +1,7 @@
 """MCP Manager for handling multiple MCP server connections."""
 
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from .adapters.base import MCPAdapter
@@ -27,7 +27,7 @@ class MCPManager:
         context = await manager.search_context("compliance", "access control", top_k=5)
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize empty adapter registry."""
         self._adapters: dict[str, MCPAdapter] = {}
 
@@ -64,7 +64,7 @@ class MCPManager:
         """
         return list(self._adapters.keys())
 
-    async def get_sources_status(self) -> list[dict]:
+    async def get_sources_status(self) -> list[dict[str, Any]]:
         """Get status of all registered sources.
 
         Returns:
@@ -73,16 +73,16 @@ class MCPManager:
         sources = []
         for adapter in self._adapters.values():
             available = await adapter.health_check()
-            sources.append({
-                "name": adapter.name,
-                "display_name": adapter.display_name,
-                "available": available,
-            })
+            sources.append(
+                {
+                    "name": adapter.name,
+                    "display_name": adapter.display_name,
+                    "available": available,
+                }
+            )
         return sources
 
-    async def search_context(
-        self, source: str, query: str, top_k: int = 5
-    ) -> list[str]:
+    async def search_context(self, source: str, query: str, top_k: int = 5) -> list[str]:
         """Get context from a specific source.
 
         Args:
@@ -100,9 +100,7 @@ class MCPManager:
 
         return await adapter.search_context(query, top_k)
 
-    async def search_all_sources(
-        self, query: str, top_k: int = 5
-    ) -> dict[str, list[str]]:
+    async def search_all_sources(self, query: str, top_k: int = 5) -> dict[str, list[str]]:
         """Query all registered sources.
 
         Args:

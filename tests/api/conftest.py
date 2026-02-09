@@ -75,9 +75,7 @@ def mock_vector_store():
 
 
 @pytest.fixture
-def app(
-    mock_ingestion_service, mock_query_service, mock_session_manager, mock_vector_store
-):
+def app(mock_ingestion_service, mock_query_service, mock_session_manager, mock_vector_store):
     """Create test app with mocked dependencies."""
     application = create_app()
 
@@ -87,13 +85,9 @@ def app(
     async def override_query_service():
         return mock_query_service
 
-    application.dependency_overrides[get_ingestion_service] = (
-        lambda: mock_ingestion_service
-    )
+    application.dependency_overrides[get_ingestion_service] = lambda: mock_ingestion_service
     application.dependency_overrides[get_query_service] = override_query_service
-    application.dependency_overrides[get_session_manager] = (
-        lambda: mock_session_manager
-    )
+    application.dependency_overrides[get_session_manager] = lambda: mock_session_manager
     application.dependency_overrides[get_vector_store] = lambda: mock_vector_store
     application.dependency_overrides[get_aegis_client] = override_aegis_client
 
@@ -109,7 +103,5 @@ def client(app) -> TestClient:
 @pytest.fixture
 async def async_client(app) -> AsyncClient:
     """Async test client."""
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as ac:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac

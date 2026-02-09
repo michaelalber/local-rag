@@ -3,7 +3,7 @@
 import json
 import logging
 from collections.abc import AsyncGenerator
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, Header
 from fastapi.responses import StreamingResponse
@@ -18,12 +18,12 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 logger = logging.getLogger(__name__)
 
 
-def format_sse_event(event: str, data: dict) -> str:
+def format_sse_event(event: str, data: dict[str, Any]) -> str:
     """Format data as Server-Sent Event."""
     return f"event: {event}\ndata: {json.dumps(data)}\n\n"
 
 
-def format_sources(chunks: list[Chunk]) -> list[dict]:
+def format_sources(chunks: list[Chunk]) -> list[dict[str, Any]]:
     """Format chunks as source dictionaries for SSE."""
     return [
         {
@@ -144,8 +144,7 @@ async def chat_stream(
     conversation_history = None
     if chat_request.history:
         conversation_history = [
-            {"role": msg.role, "content": msg.content}
-            for msg in chat_request.history
+            {"role": msg.role, "content": msg.content} for msg in chat_request.history
         ]
 
     # Map schema enum to domain enum

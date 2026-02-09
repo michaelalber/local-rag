@@ -40,10 +40,13 @@ class MSLearnAdapter(MCPAdapter):
 
         try:
             # MS Learn uses 'microsoft_docs_search' tool
-            result = await self.client.call_tool("microsoft_docs_search", {
-                "query": query,
-                "count": top_k,
-            })
+            result = await self.client.call_tool(
+                "microsoft_docs_search",
+                {
+                    "query": query,
+                    "count": top_k,
+                },
+            )
             return self._format_results(result)
         except Exception as e:
             logger.error("Failed to search MS Learn: %s", e)
@@ -58,7 +61,7 @@ class MSLearnAdapter(MCPAdapter):
         Returns:
             List of formatted context strings
         """
-        context_strings = []
+        context_strings: list[str] = []
 
         if not result or not result.content:
             return context_strings
@@ -95,7 +98,7 @@ class MSLearnAdapter(MCPAdapter):
 
         return context_strings
 
-    def _format_doc(self, doc: dict) -> str | None:
+    def _format_doc(self, doc: dict[str, Any]) -> str | None:
         """Format a single document as a context string.
 
         Args:

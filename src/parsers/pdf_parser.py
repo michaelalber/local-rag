@@ -1,6 +1,7 @@
 """PDF document parser."""
 
 from pathlib import Path
+from typing import Any
 
 from pypdf import PdfReader
 
@@ -13,14 +14,14 @@ class PdfParser(DocumentParser):
     def parse(self, file_path: Path) -> tuple[str, str | None]:
         """Extract title and author from PDF metadata."""
         reader = PdfReader(file_path)
-        metadata = reader.metadata or {}
+        metadata: dict[str, Any] = dict(reader.metadata) if reader.metadata else {}
 
-        title = metadata.get("/Title", file_path.stem) or file_path.stem
+        title = str(metadata.get("/Title", file_path.stem) or file_path.stem)
         author = metadata.get("/Author")
 
         return str(title), str(author) if author else None
 
-    def extract_text(self, file_path: Path) -> list[tuple[str, dict]]:
+    def extract_text(self, file_path: Path) -> list[tuple[str, dict[str, Any]]]:
         """
         Extract text from each page.
 

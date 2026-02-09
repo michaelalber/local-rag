@@ -1,6 +1,7 @@
 """Text chunking for embedding."""
 
 import re
+from typing import Any
 from uuid import uuid4
 
 
@@ -41,9 +42,7 @@ class TextChunker:
             code_blocks.append((match.start(), match.end(), lang))
 
         # Detect RST-style code blocks: .. code-block:: language
-        for match in re.finditer(
-            r"\.\. code-block::\s*(\w*)\n\n((?:    .*\n?)+)", text, re.DOTALL
-        ):
+        for match in re.finditer(r"\.\. code-block::\s*(\w*)\n\n((?:    .*\n?)+)", text, re.DOTALL):
             lang = match.group(1) or None
             code_blocks.append((match.start(), match.end(), lang))
 
@@ -55,7 +54,7 @@ class TextChunker:
         """Check if position is inside a code block."""
         return any(start <= pos < end for start, end, _ in code_blocks)
 
-    def chunk(self, text: str, metadata: dict) -> list[dict]:
+    def chunk(self, text: str, metadata: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Split text into chunks with metadata, preserving code blocks.
 
@@ -140,7 +139,7 @@ class TextChunker:
 
         return chunks
 
-    def chunk_hierarchical(self, text: str, metadata: dict) -> list[dict]:
+    def chunk_hierarchical(self, text: str, metadata: dict[str, Any]) -> list[dict[str, Any]]:
         """
         Create hierarchical chunks with parent context.
 

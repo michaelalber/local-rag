@@ -2,6 +2,7 @@
 
 import re
 from pathlib import Path
+from typing import Any
 
 from .base import DocumentParser
 
@@ -30,7 +31,7 @@ class ReStructuredTextParser(DocumentParser):
 
         return title, author
 
-    def extract_text(self, file_path: Path) -> list[tuple[str, dict]]:
+    def extract_text(self, file_path: Path) -> list[tuple[str, dict[str, Any]]]:
         """
         Extract text from ReStructuredText file.
 

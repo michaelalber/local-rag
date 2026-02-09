@@ -45,9 +45,7 @@ MODEL_DESCRIPTIONS = {
 
 
 @router.get("")
-async def list_models(
-    settings: Annotated[Settings, Depends(get_settings)]
-):
+async def list_models(settings: Annotated[Settings, Depends(get_settings)]) -> dict[str, object]:
     """
     List available Ollama models with descriptions.
 
@@ -69,21 +67,26 @@ async def list_models(
             model_name = model_info.get("name", "").split(":")[0]  # Remove tag (e.g., :latest)
 
             # Get description if available
-            description_info = MODEL_DESCRIPTIONS.get(model_name, {
-                "name": model_name.title(),
-                "description": "Custom or specialized model",
-                "best_for": ["Custom use cases"],
-                "size": model_info.get("size", "Unknown"),
-            })
+            description_info = MODEL_DESCRIPTIONS.get(
+                model_name,
+                {
+                    "name": model_name.title(),
+                    "description": "Custom or specialized model",
+                    "best_for": ["Custom use cases"],
+                    "size": model_info.get("size", "Unknown"),
+                },
+            )
 
-            models.append({
-                "id": model_info.get("name"),  # Full name with tag
-                "name": description_info["name"],
-                "description": description_info["description"],
-                "best_for": description_info["best_for"],
-                "size": description_info.get("size", "Unknown"),
-                "modified_at": model_info.get("modified_at"),
-            })
+            models.append(
+                {
+                    "id": model_info.get("name"),  # Full name with tag
+                    "name": description_info["name"],
+                    "description": description_info["description"],
+                    "best_for": description_info["best_for"],
+                    "size": description_info.get("size", "Unknown"),
+                    "modified_at": model_info.get("modified_at"),
+                }
+            )
 
         return {
             "models": models,

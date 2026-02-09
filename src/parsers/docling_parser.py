@@ -1,7 +1,7 @@
 """Document parser using Docling for enhanced PDF and Office document support."""
 
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from .base import DocumentParser
 
@@ -71,7 +71,7 @@ class DoclingParser(DocumentParser):
 
         return str(title), author
 
-    def extract_text(self, file_path: Path) -> list[tuple[str, dict]]:
+    def extract_text(self, file_path: Path) -> list[tuple[str, dict[str, Any]]]:
         """
         Extract text segments with structural metadata.
 
@@ -97,7 +97,7 @@ class DoclingParser(DocumentParser):
         segments = []
 
         for chunk in chunks:
-            metadata: dict = {}
+            metadata: dict[str, Any] = {}
 
             # Extract metadata from chunk if available
             if hasattr(chunk, "meta") and chunk.meta:

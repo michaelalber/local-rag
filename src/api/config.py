@@ -4,8 +4,7 @@ from enum import Enum
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import ConfigDict
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class MCPTransport(str, Enum):
@@ -69,7 +68,7 @@ class Settings(BaseSettings):
     export_control_mcp_args: str = "run python -m export_control_mcp.server"
     export_control_mcp_working_dir: str | None = None
 
-    model_config = ConfigDict(env_file=".env", extra="ignore", frozen=True)
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore", frozen=True)
 
 
 @lru_cache

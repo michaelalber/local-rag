@@ -9,9 +9,7 @@ from src.models import BookNotFoundError, UnsupportedFileTypeError
 
 class TestUploadBooks:
     def test_upload_single_book(self, client: TestClient):
-        files = {
-            "files": ("test.pdf", BytesIO(b"fake pdf content"), "application/pdf")
-        }
+        files = {"files": ("test.pdf", BytesIO(b"fake pdf content"), "application/pdf")}
 
         response = client.post(
             "/api/books",
@@ -31,16 +29,10 @@ class TestUploadBooks:
 
         assert response.status_code == 422  # Validation error
 
-    def test_upload_rejects_invalid_file_type(
-        self, client: TestClient, mock_ingestion_service
-    ):
-        mock_ingestion_service.ingest_book.side_effect = UnsupportedFileTypeError(
-            "Not allowed"
-        )
+    def test_upload_rejects_invalid_file_type(self, client: TestClient, mock_ingestion_service):
+        mock_ingestion_service.ingest_book.side_effect = UnsupportedFileTypeError("Not allowed")
 
-        files = {
-            "files": ("test.exe", BytesIO(b"content"), "application/octet-stream")
-        }
+        files = {"files": ("test.exe", BytesIO(b"content"), "application/octet-stream")}
 
         response = client.post(
             "/api/books",

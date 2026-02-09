@@ -36,10 +36,13 @@ class AegisAdapter(MCPAdapter):
             return []
 
         try:
-            result = await self.client.call_tool("search_compliance", {
-                "query": query,
-                "top_k": top_k,
-            })
+            result = await self.client.call_tool(
+                "search_compliance",
+                {
+                    "query": query,
+                    "top_k": top_k,
+                },
+            )
             return self._format_results(result)
         except Exception as e:
             logger.error("Failed to search compliance: %s", e)
@@ -54,7 +57,7 @@ class AegisAdapter(MCPAdapter):
         Returns:
             List of formatted context strings
         """
-        context_strings = []
+        context_strings: list[str] = []
 
         if not result or not result.content:
             return context_strings
@@ -78,7 +81,7 @@ class AegisAdapter(MCPAdapter):
 
         return context_strings
 
-    def _format_control(self, control: dict) -> str:
+    def _format_control(self, control: dict[str, Any]) -> str:
         """Format a single control as a context string.
 
         Args:

@@ -41,9 +41,7 @@ Some content here.
 
         assert title == "My Document Title"
 
-    def test_parse_extracts_author_from_field(
-        self, parser: ReStructuredTextParser, tmp_path: Path
-    ):
+    def test_parse_extracts_author_from_field(self, parser: ReStructuredTextParser, tmp_path: Path):
         test_file = tmp_path / "test.rst"
         test_file.write_text(""":Author: John Doe
 
@@ -67,9 +65,7 @@ Content here.
 
         assert title == "my_notes"
 
-    def test_extract_text_returns_content(
-        self, parser: ReStructuredTextParser, tmp_path: Path
-    ):
+    def test_extract_text_returns_content(self, parser: ReStructuredTextParser, tmp_path: Path):
         test_file = tmp_path / "test.rst"
         test_file.write_text("""Title
 =====

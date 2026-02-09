@@ -2,6 +2,7 @@
 
 import logging
 from collections.abc import AsyncGenerator
+from uuid import uuid4
 
 import ollama
 
@@ -15,9 +16,7 @@ logger = logging.getLogger(__name__)
 class OllamaLLMClient:
     """LLM client using Ollama for local inference."""
 
-    def __init__(
-        self, model: str = "qwen3:8b", base_url: str = "http://localhost:11434"
-    ):
+    def __init__(self, model: str = "qwen3:8b", base_url: str = "http://localhost:11434"):
         """
         Args:
             model: Ollama model name.
@@ -51,19 +50,20 @@ class OllamaLLMClient:
         """
         try:
             # Handle both string context and Chunk objects
+            chunks: list[Chunk]
             if context and isinstance(context[0], str):
                 # Convert context strings to minimal Chunk objects
                 chunks = [
                     Chunk(
-                        id=None,
-                        book_id=None,
-                        content=text,
+                        id=uuid4(),
+                        book_id=uuid4(),
+                        content=str(text),
                     )
                     for text in context
                 ]
             else:
                 # Already Chunk objects with metadata
-                chunks = context
+                chunks = list(context)  # type: ignore[arg-type]
 
             # Build the RAG prompt
             full_prompt = self.prompt_builder.build_prompt(
@@ -82,11 +82,9 @@ class OllamaLLMClient:
 
             # Extract response text
             if "message" not in response or "content" not in response["message"]:
-                raise LLMConnectionError(
-                    f"Malformed response from Ollama: {response}"
-                )
+                raise LLMConnectionError(f"Malformed response from Ollama: {response}")
 
-            return response["message"]["content"]
+            return str(response["message"]["content"])
 
         except ollama.ResponseError as e:
             logger.error("Ollama API error: %s", e)
@@ -126,13 +124,11 @@ class OllamaLLMClient:
         """
         try:
             # Handle both string context and Chunk objects
+            chunks: list[Chunk]
             if context and isinstance(context[0], str):
-                chunks = [
-                    Chunk(id=None, book_id=None, content=text)
-                    for text in context
-                ]
+                chunks = [Chunk(id=uuid4(), book_id=uuid4(), content=str(text)) for text in context]
             else:
-                chunks = context
+                chunks = list(context)  # type: ignore[arg-type]
 
             # Build the RAG prompt
             full_prompt = self.prompt_builder.build_prompt(

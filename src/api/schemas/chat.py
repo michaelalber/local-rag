@@ -32,9 +32,7 @@ class ChatRequest(BaseModel):
         default=QuerySourceSchema.books,
         description="Query source: 'books', 'compliance', 'mslearn', or 'all'",
     )
-    top_k: int = Field(
-        default=5, ge=1, le=100, description="Number of chunks to retrieve"
-    )
+    top_k: int = Field(default=5, ge=1, le=100, description="Number of chunks to retrieve")
     retrieval_percentage: float | None = Field(
         default=2.0, ge=0.5, le=10.0, description="Percentage of chunks (0.5-10%)"
     )

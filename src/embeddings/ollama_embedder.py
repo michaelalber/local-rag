@@ -44,7 +44,8 @@ class OllamaEmbedder:
                 json={"model": self.model_name, "prompt": text},
             )
             response.raise_for_status()
-            return response.json()["embedding"]
+            result: list[float] = response.json()["embedding"]
+            return result
 
     def embed(self, texts: list[str]) -> list[list[float]]:
         """Generate embeddings for multiple texts."""

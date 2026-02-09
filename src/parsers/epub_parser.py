@@ -1,6 +1,7 @@
 """EPUB document parser."""
 
 from pathlib import Path
+from typing import Any
 
 import ebooklib
 from bs4 import BeautifulSoup
@@ -27,7 +28,7 @@ class EpubParser(DocumentParser):
 
         return str(title), str(author) if author else None
 
-    def extract_text(self, file_path: Path) -> list[tuple[str, dict]]:
+    def extract_text(self, file_path: Path) -> list[tuple[str, dict[str, Any]]]:
         """
         Extract text from each chapter.
 

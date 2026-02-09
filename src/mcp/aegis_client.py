@@ -178,9 +178,7 @@ class AegisMCPClient:
             return None
 
         try:
-            result = await self._session.call_tool(
-                "get_control", {"control_id": control_id}
-            )
+            result = await self._session.call_tool("get_control", {"control_id": control_id})
 
             if result.content:
                 item = result.content[0]

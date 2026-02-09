@@ -12,13 +12,24 @@ class FileValidator:
 
     ALLOWED_EXTENSIONS: ClassVar[set[str]] = {
         # Text formats
-        ".md", ".txt", ".rst", ".html", ".htm",
+        ".md",
+        ".txt",
+        ".rst",
+        ".html",
+        ".htm",
         # eBook formats
-        ".pdf", ".epub",
+        ".pdf",
+        ".epub",
         # Office formats (requires docling)
-        ".docx", ".pptx", ".xlsx",
+        ".docx",
+        ".pptx",
+        ".xlsx",
         # Image formats (requires docling for OCR)
-        ".png", ".jpg", ".jpeg", ".tiff", ".tif",
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".tiff",
+        ".tif",
     }
 
     # Magic bytes for binary file detection
@@ -73,9 +84,7 @@ class FileValidator:
         if size_bytes > self.max_size_bytes:
             max_mb = self.max_size_bytes / (1024 * 1024)
             actual_mb = size_bytes / (1024 * 1024)
-            raise FileSizeLimitError(
-                f"File size {actual_mb:.1f}MB exceeds limit of {max_mb:.0f}MB"
-            )
+            raise FileSizeLimitError(f"File size {actual_mb:.1f}MB exceeds limit of {max_mb:.0f}MB")
 
     def sanitize_filename(self, filename: str) -> str:
         """

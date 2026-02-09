@@ -1,6 +1,6 @@
 """Health check endpoints."""
 
-from typing import Annotated
+from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends
 
@@ -14,7 +14,7 @@ router = APIRouter(tags=["health"])
 @router.get("/health")
 async def health_check(
     mcp_manager: Annotated[MCPManager, Depends(get_mcp_manager)],
-) -> dict:
+) -> dict[str, Any]:
     """Check API health including all MCP source statuses."""
     # Get status of all registered MCP sources
     mcp_sources = await mcp_manager.get_sources_status()

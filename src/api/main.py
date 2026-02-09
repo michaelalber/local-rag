@@ -1,5 +1,6 @@
 """FastAPI application factory."""
 
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -15,7 +16,7 @@ from .routes import books_router, chat_router, chat_stream_router, health_router
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan events."""
     # Startup
     yield
@@ -48,7 +49,7 @@ def create_app() -> FastAPI:
     )
 
     # Exception handlers
-    app.add_exception_handler(BookChatError, book_chat_error_handler)
+    app.add_exception_handler(BookChatError, book_chat_error_handler)  # type: ignore[arg-type]
     app.add_exception_handler(Exception, general_exception_handler)
 
     # Routes

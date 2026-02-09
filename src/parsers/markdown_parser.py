@@ -2,6 +2,7 @@
 
 import re
 from pathlib import Path
+from typing import Any
 
 from .base import DocumentParser
 
@@ -30,7 +31,7 @@ class MarkdownParser(DocumentParser):
 
         return title, author
 
-    def extract_text(self, file_path: Path) -> list[tuple[str, dict]]:
+    def extract_text(self, file_path: Path) -> list[tuple[str, dict[str, Any]]]:
         """
         Extract text from Markdown file, split by sections.
 
@@ -90,6 +91,6 @@ class MarkdownParser(DocumentParser):
             # Look for author field
             author_match = re.search(r"^author:\s*(.+)$", frontmatter, re.MULTILINE)
             if author_match:
-                return author_match.group(1).strip().strip('"\'')
+                return author_match.group(1).strip().strip("\"'")
 
         return None

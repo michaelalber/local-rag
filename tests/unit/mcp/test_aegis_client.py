@@ -76,9 +76,7 @@ class TestAegisMCPClientConnect:
             yield mock
 
     @pytest.mark.asyncio
-    async def test_connect_stdio_success(
-        self, mock_stdio_client, mock_client_session
-    ):
+    async def test_connect_stdio_success(self, mock_stdio_client, mock_client_session):
         """Test successful connection via stdio."""
         client = AegisMCPClient(
             transport="stdio",
@@ -93,9 +91,7 @@ class TestAegisMCPClientConnect:
         mock_client_session.return_value.initialize.assert_called_once()
 
     @pytest.mark.asyncio
-    async def test_connect_http_success(
-        self, mock_http_client, mock_client_session
-    ):
+    async def test_connect_http_success(self, mock_http_client, mock_client_session):
         """Test successful connection via HTTP."""
         client = AegisMCPClient(
             transport="http",
@@ -124,9 +120,7 @@ class TestAegisMCPClientConnect:
             await client.connect()
 
     @pytest.mark.asyncio
-    async def test_disconnect_cleans_up(
-        self, mock_stdio_client, mock_client_session
-    ):
+    async def test_disconnect_cleans_up(self, mock_stdio_client, mock_client_session):
         """Test that disconnect cleans up resources."""
         client = AegisMCPClient(
             transport="stdio",

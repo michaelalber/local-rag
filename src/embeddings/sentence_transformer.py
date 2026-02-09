@@ -17,7 +17,10 @@ class SentenceTransformerEmbedder:
     @property
     def dimension(self) -> int:
         """Embedding dimension for this model."""
-        return self._dimension
+        dim = self._dimension
+        if dim is None:
+            raise RuntimeError("Model did not return embedding dimension")
+        return dim
 
     def embed(self, texts: list[str]) -> list[list[float]]:
         """Generate embeddings for multiple texts."""
@@ -26,9 +29,11 @@ class SentenceTransformerEmbedder:
 
         # convert_to_numpy for efficiency, then to list for JSON compatibility
         embeddings = self.model.encode(texts, convert_to_numpy=True)
-        return embeddings.tolist()
+        result: list[list[float]] = embeddings.tolist()
+        return result
 
     def embed_query(self, query: str) -> list[float]:
         """Generate embedding for a single query."""
         embedding = self.model.encode(query, convert_to_numpy=True)
-        return embedding.tolist()
+        result: list[float] = embedding.tolist()
+        return result
