@@ -29,7 +29,7 @@ Connect to external knowledge via [Model Context Protocol (MCP)](https://modelco
 ## Tech Stack
 
 ### Backend
-- **Python 3.11+** with type hints
+- **Python 3.10+** with type hints
 - **FastAPI** - Modern async web framework
 - **ChromaDB** - Vector database for embeddings
 - **Ollama** - Local LLM inference and embeddings
@@ -52,7 +52,7 @@ Connect to external knowledge via [Model Context Protocol (MCP)](https://modelco
 
 ## Prerequisites
 
-- **Python 3.11+**
+- **Python 3.10+**
 - **Node.js 18+** and npm
 - **Ollama** - [Install from ollama.ai](https://ollama.ai)
 - **Hardware**:
@@ -226,8 +226,11 @@ pytest --cov=src --cov-report=term-missing
 # Linting
 ruff check src/ tests/
 
-# Formatting
-black src/ tests/
+# Type checking
+mypy src/
+
+# Security scan
+bandit -r src/ -c pyproject.toml
 ```
 
 ## API Endpoints

@@ -4,7 +4,7 @@
 
 Local eBook RAG app: upload 1-5 books (PDF/EPUB), chat with them using local LLM.
 
-**Stack:** Python 3.11+, FastAPI, Vue.js 3, ChromaDB, Ollama, sentence-transformers  
+**Stack:** Python 3.10+, FastAPI, Vue.js 3, ChromaDB, Ollama, sentence-transformers  
 **Hardware:** Intel i7-12700K, 64GB RAM, RTX 3080 10GB VRAM
 
 ## Architecture
@@ -50,9 +50,8 @@ ollama pull mxbai-embed-large     # Embeddings
 
 # Lint
 ruff check src/ tests/
-black src/ tests/
-mypy src/                         # Type checking
-bandit -r src/ -c pyproject.toml  # Security linting
+mypy src/
+bandit -r src/ -c pyproject.toml
 ```
 
 ## Development Principles

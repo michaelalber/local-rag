@@ -28,7 +28,6 @@ pytest --cov=src --cov-report=term-missing
 ### Linting and Type Checking
 ```bash
 ruff check src/ tests/
-black src/ tests/
 mypy src/
 bandit -r src/ -c pyproject.toml
 ```
