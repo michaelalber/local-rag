@@ -34,16 +34,13 @@ dev = [
     "pytest-cov>=6.0.0",
     "httpx>=0.28.0",
     "ruff>=0.8.0",
-    "black>=24.0.0",
+    "mypy>=1.0.0",
+    "bandit[toml]>=1.7.5",
+    "pip-audit>=2.6.0",
     "fpdf2>=2.7.0",
 ]
 enhanced = [
     "docling>=2.0.0",
-]
-security = [
-    "bandit>=1.7.5",  # Security linting
-    "safety>=2.3.5",  # Dependency vulnerability scanning
-    "pip-audit>=2.6.0",  # Audit dependencies for vulnerabilities
 ]
 
 [build-system]
@@ -56,7 +53,9 @@ include = ["src*"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
 testpaths = ["tests"]
+addopts = "-v --tb=short"
 python_files = "test_*.py"
 python_functions = "test_*"
 markers = [
@@ -67,15 +66,43 @@ markers = [
 [tool.ruff]
 target-version = "py310"
 line-length = 100
+src = ["src", "tests"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "N", "W", "UP"]
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings
+    "F",      # Pyflakes
+    "I",      # isort
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+    "S",      # flake8-bandit
+    "T20",    # flake8-print
+    "SIM",    # flake8-simplify
+    "RUF",    # Ruff-specific rules
+]
 
-[tool.black]
-line-length = 100
-target-version = ["py310"]
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+exclude = ["tests", ".venv"]
 
 [tool.bandit]
-targets = ["src"]
 exclude_dirs = ["tests", ".venv"]
-skips = []
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
