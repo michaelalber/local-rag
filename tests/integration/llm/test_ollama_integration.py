@@ -2,7 +2,7 @@
 
 These tests require a running Ollama server with the model pulled.
 Run: ollama serve
-Run: ollama pull qwen3:8b
+Run: ollama pull gemma3:4b
 """
 
 import pytest
@@ -18,7 +18,7 @@ class TestOllamaIntegration:
     @pytest.fixture
     def client(self) -> OllamaLLMClient:
         """Create client pointing to local Ollama."""
-        return OllamaLLMClient(model="qwen3:8b", base_url="http://localhost:11434")
+        return OllamaLLMClient(model="gemma3:4b", base_url="http://localhost:11434")
 
     @pytest.mark.asyncio
     async def test_health_check_with_running_server(self, client: OllamaLLMClient):
@@ -92,7 +92,7 @@ class TestOllamaIntegration:
     async def test_client_with_invalid_url_raises_error(self):
         """Test that invalid Ollama URL is handled."""
         client = OllamaLLMClient(
-            model="qwen3:8b",
+            model="gemma3:4b",
             base_url="http://invalid-host:59999",  # Use valid port range
         )
 
