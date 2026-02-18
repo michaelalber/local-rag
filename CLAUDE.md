@@ -64,18 +64,23 @@ Three pillars: **TDD**, **Security by Design**, **YAGNI**
 - Test business logic and edge cases, not boilerplate
 - Run tests before moving to next phase
 
-**Security by Design (OWASP):**
-- Security is not an afterthought - build it in from the start
+### Security-By-Design
 - Validate all inputs at system boundaries
-- Follow OWASP guidelines for file handling, auth, and data protection
-- See Security Requirements section for specifics
+- Validate file types via magic bytes (PDF: `%PDF`, EPUB: `PK`) and extension allowlist
+- Enforce upload size limits (100MB) and sanitize filenames against path traversal
+- Set security headers on all HTTP responses (CSP, X-Frame-Options, X-Content-Type-Options)
+- Lock CORS to specific origins and HTTP methods
+- Store uploaded files outside the web root
+- Never include secrets in source code — use environment variables
+- See Security Requirements section for OWASP-specific rules
 
-**YAGNI (You Aren't Gonna Need It):**
-- No abstract interfaces until needed
-- No repository pattern - direct JSON read/write
+### YAGNI (You Aren't Gonna Need It)
+- Start with direct implementations
+- Add abstractions only when complexity demands it
+- Create interfaces only when multiple implementations exist
 - No dependency injection containers
-- No plugin architecture - simple match/case on file extension
-- Only apply abstractions after Rule of Three (3+ consumers)
+- No repository pattern — direct JSON read/write
+- No plugin architecture — simple match/case on file extension
 
 ## Code Standards
 

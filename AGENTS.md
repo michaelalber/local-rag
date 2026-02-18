@@ -104,16 +104,22 @@ bandit -r src/ -c pyproject.toml
 3. Test business logic and edge cases
 4. Run tests before committing
 
-### Security by Design
-- Build security into the design from the start
-- Validate inputs at system boundaries
-- Follow OWASP guidelines for file handling, auth, and data protection
+### Security-By-Design
+- Validate all inputs at system boundaries
+- Validate file types via magic bytes (PDF: `%PDF`, EPUB: `PK`) and extension allowlist
+- Enforce upload size limits (100MB) and sanitize filenames against path traversal
+- Set security headers on all HTTP responses (CSP, X-Frame-Options, X-Content-Type-Options)
+- Lock CORS to specific origins and HTTP methods
+- Store uploaded files outside the web root
+- Never include secrets in source code — use environment variables
 
-### YAGNI
-- No abstract interfaces until needed
-- No repository pattern - direct JSON read/write
-- No plugin architecture - use match/case on file extensions
-- Only apply abstractions after Rule of Three (3+ consumers)
+### YAGNI (You Aren't Gonna Need It)
+- Start with direct implementations
+- Add abstractions only when complexity demands it
+- Create interfaces only when multiple implementations exist
+- No dependency injection containers
+- No repository pattern — direct JSON read/write
+- No plugin architecture — simple match/case on file extension
 
 ### Quality Gates
 - **Cyclomatic Complexity**: Methods <10, classes <20
