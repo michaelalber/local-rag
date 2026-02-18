@@ -112,6 +112,7 @@ bandit -r src/ -c pyproject.toml
 - Lock CORS to specific origins and HTTP methods
 - Store uploaded files outside the web root
 - Never include secrets in source code — use environment variables
+- All rules align with [OWASP Top 10 (2025)](https://owasp.org/Top10/2025/) guidance
 
 ### YAGNI (You Aren't Gonna Need It)
 - Start with direct implementations
