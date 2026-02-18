@@ -78,7 +78,7 @@ bandit -r src/ -c pyproject.toml
 - Use async/await for I/O-bound operations
 - Follow existing async patterns in the codebase
 
-## Security Guidelines
+## Security Guidelines (OWASP Top 10:2025)
 
 ### File Uploads (OWASP A06:2025)
 - Only accept: `.pdf`, `.epub`, `.md`, `.txt`, `.rst`, `.html`
