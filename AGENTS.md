@@ -80,14 +80,14 @@ bandit -r src/ -c pyproject.toml
 
 ## Security Guidelines
 
-### File Uploads (OWASP A04:2021)
+### File Uploads (OWASP A06:2025)
 - Only accept: `.pdf`, `.epub`, `.md`, `.txt`, `.rst`, `.html`
 - Validate MIME types via magic bytes (PDF: `%PDF`, EPUB: `PK`) or UTF-8 validation
 - Max size: 100MB
 - Sanitize filenames (remove path traversal, special chars)
 - Store uploads outside web root
 
-### Input Validation (OWASP A03:2021)
+### Input Validation (OWASP A05:2025)
 - Validate/sanitize all user inputs at system boundaries
 - Use parameterized queries for database operations
 - Never trust client-side validation

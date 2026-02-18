@@ -131,18 +131,18 @@ async def test_upload_pdf_returns_book_metadata(client, sample_pdf):
     assert response.json()["title"] is not None
 ```
 
-## Security Requirements (OWASP)
+## Security Requirements (OWASP Top 10:2025)
 
 All implementations must follow these security principles:
 
-**File Upload (A04:2021 - Insecure Design):**
+**File Upload (A06:2025 - Insecure Design):**
 - Extensions: `.pdf`, `.epub`, `.md`, `.txt`, `.rst`, `.html`
 - Verify MIME type via magic bytes (PDF: `%PDF`, EPUB: `PK`) or UTF-8 validation (text files)
 - Max size: 100MB (configurable)
 - Sanitize filenames (remove path traversal, special chars)
 - Store uploads outside web root
 
-**Input Validation (A03:2021 - Injection):**
+**Input Validation (A05:2025 - Injection):**
 - Validate and sanitize all user inputs
 - Use parameterized queries for any database operations
 - Never trust client-side validation alone
