@@ -48,7 +48,7 @@ ollama serve
 ollama pull gemma3:12b            # LLM (recommended)
 ollama pull mxbai-embed-large     # Embeddings
 
-# Lint
+# Lint (activate venv first: source .venv/bin/activate)
 ruff check src/ tests/
 mypy src/
 bandit -r src/ -c pyproject.toml
