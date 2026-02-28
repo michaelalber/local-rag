@@ -1,4 +1,7 @@
-# AGENTS.md
+# AGENTS.md — local-rag
+
+> Global rules (TDD, security, quality gates, Python standards, AI behavior) are in
+> `~/.config/opencode/AGENTS.md` and apply here automatically.
 
 ## Build/Lint/Test Commands
 
@@ -78,55 +81,20 @@ bandit -r src/ -c pyproject.toml
 - Use async/await for I/O-bound operations
 - Follow existing async patterns in the codebase
 
-## Security Guidelines (OWASP Top 10:2025)
+## Project-Specific Security
 
-### File Uploads (OWASP A06:2025)
-- Only accept: `.pdf`, `.epub`, `.md`, `.txt`, `.rst`, `.html`
-- Validate MIME types via magic bytes (PDF: `%PDF`, EPUB: `PK`) or UTF-8 validation
-- Max size: 100MB
+In addition to global security rules:
+
+### File Uploads
+- Accepted extensions allowlist: `.pdf`, `.epub`, `.md`, `.txt`, `.rst`, `.html`
+- Validate MIME types via magic bytes: PDF (`%PDF`), EPUB (`PK`), or UTF-8 validation
+- Max upload size: 100MB
 - Sanitize filenames (remove path traversal, special chars)
 - Store uploads outside web root
 
-### Input Validation (OWASP A05:2025)
-- Validate/sanitize all user inputs at system boundaries
-- Use parameterized queries for database operations
-- Never trust client-side validation
-
-### Secrets
-- Never include secrets in source code
-- Use environment variables for sensitive data
-
-## Development Principles
-
-### TDD
-1. **Never write production code without a failing test first**
-2. Cycle: RED (write failing test) → GREEN (minimal code to pass) → REFACTOR
-3. Test business logic and edge cases
-4. Run tests before committing
-
-### Security-By-Design
-- Validate all inputs at system boundaries
-- Validate file types via magic bytes (PDF: `%PDF`, EPUB: `PK`) and extension allowlist
-- Enforce upload size limits (100MB) and sanitize filenames against path traversal
-- Set security headers on all HTTP responses (CSP, X-Frame-Options, X-Content-Type-Options)
+### HTTP Security
+- Set security headers on all responses: CSP, X-Frame-Options, X-Content-Type-Options
 - Lock CORS to specific origins and HTTP methods
-- Store uploaded files outside the web root
-- Never include secrets in source code — use environment variables
-- All rules align with [OWASP Top 10 (2025)](https://owasp.org/Top10/2025/) guidance
-
-### YAGNI (You Aren't Gonna Need It)
-- Start with direct implementations
-- Add abstractions only when complexity demands it
-- Create interfaces only when multiple implementations exist
-- No dependency injection containers
-- No repository pattern — direct JSON read/write
-- No plugin architecture — simple match/case on file extension
-
-### Quality Gates
-- **Cyclomatic Complexity**: Methods <10, classes <20
-- **Code Coverage**: 80% minimum for business logic, 95% for security-critical code
-- **Maintainability Index**: Target 70+
-- **Code Duplication**: Maximum 3%
 
 ## Git Workflow
 
